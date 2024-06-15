@@ -1,0 +1,8 @@
+.color-select .react-colorful {
+   width: 100%;
+}
+
+.color-select .react-colorful__pointer {
+   width: 23px;
+   height: 23px;
+}
