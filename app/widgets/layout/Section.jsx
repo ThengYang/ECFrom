@@ -5,14 +5,14 @@ import { Box, IconButton, Typography } from "@mui/material";
 
 import { generatableWidgets } from "@/app/constants/DropAcceptable";
 
-const Section = (prop) => {
+const Section = (props) => {
 
-   const { id = null, onAdd = () => void 0 } = prop
+   const { id = null, onAdd = () => void 0, exclude = null } = props
    const [boxBorderColor, setBoxBorderColor] = React.useState('gray')
 
    const [{ isOver, draggingColor, canDrop }, drop] = useDrop(
       () => ({
-         accept: generatableWidgets,
+         accept: exclude ? generatableWidgets.filter(item => item != exclude) : generatableWidgets,
          drop(item, monitor) {
             onAdd(id, monitor.getItemType())
             return undefined
@@ -44,6 +44,7 @@ const Section = (prop) => {
          onDragOver={() => setBoxBorderColor('green')}
          onDrop={() => setBoxBorderColor('gray')}
          onDragLeave={() => setBoxBorderColor('gray')}
+         className='form-section'
       >
          <IconButton size='small' onClick={handleClick} sx={{ color: boxBorderColor }}>
             <AddCircleRoundedIcon style={{ fontSize: 30 }} />

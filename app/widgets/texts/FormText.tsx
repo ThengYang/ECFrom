@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react";
-import { Box, ThemeProvider } from "@mui/material";
+
+import { Box, ThemeProvider, IconButton, Divider } from "@mui/material";
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 import WidgetController from "../WidgetController";
 import WidgetDragPreview from "../WidgetDragPreview";
@@ -10,9 +12,10 @@ import { TextBox } from "@/app/components/inputs/texts";
 import { TEXT } from "@/app/constants/WigetType";
 import WidgetName from "../WidgetName";
 import useOutsideClick from "../WidgetClickOutSideHook";
+import WidgetBase from "../WidgetBase";
 
-
-interface FormTextProps extends TEXT {
+interface FormTextProps {
+   widget: TEXT,
    onChange?: Function
    onAdd?: Function
    onDelete?: Function
@@ -20,30 +23,19 @@ interface FormTextProps extends TEXT {
    setWidgetNames: (item: { [key: string]: any }) => void
    setActive?: () => void
    setInactive?: () => void
+   handleWidgetCondition: (parseEvent: string, data: any) => any,
 }
 
 const TitleText = (props: FormTextProps) => {
 
    const {
-      id,
-      parentId,
-      type,
-      name,
-      value = 'Add your text here',
-      fontSize = 18,
-      fontColor = '#000000',
-      fontFamily,
-      lineHeight,
-      align = 'left',
-      marginTop = 0,
-      marginRight = 0,
-      marginLeft = 0,
-      marginBottom = 0,
+      widget,
       onChange = () => void 0,
       onAdd = () => void 0,
       onDelete = () => void 0,
       widgetNames,
       setWidgetNames,
+      handleWidgetCondition,
       setActive = () => void 0,
       setInactive = () => void 0,
    } = props
@@ -79,36 +71,21 @@ const TitleText = (props: FormTextProps) => {
       }
    });
 
-
    const handleWidgetNameChange = (newName: string) => {
       onChange(
          {
-            id: id,
-            parentId: parentId,
-            name: newName,
-            type: type,
-            value: value,
-            fontSize: fontSize,
-            fontColor: fontColor,
-            fontFamily: fontFamily,
-            lineHeight: lineHeight,
-            align: align,
+            ...widget,
+            name: newName
          }
       )
    }
+
    const handleWidgetValueChange = (value: string) => {
       onChange(
          {
-            id: id,
-            parentId: parentId,
-            name: name,
-            type: type,
-            value: value,
-            fontSize: fontSize,
-            fontColor: fontColor,
-            fontFamily: fontFamily,
-            lineHeight: lineHeight,
-            align: align,
+            ...widget,
+            value: value
+
          }
       )
    }
@@ -118,67 +95,27 @@ const TitleText = (props: FormTextProps) => {
       setShowWidget(true)
    }
 
+   const handleBoxClick = (event: any) => {
+      if (event.target.classList.contains('grid-section') || event.target.classList.contains('form-section')) {
+         setActive();
+         setIsActive(true);
+      }
+   }
+   const isVisible = widget.visibility?.conditional ?
+      handleWidgetCondition('visibility', widget.visibility) :
+      widget.visibility?.action === 'hidden' ? false : true
+
    return (
-      <Box
-         sx={{
-            border: isActve ? '1px solid #03a9f4' : '0px',
-            '&:hover': { border: '1px solid #03a9f4' },
-            marginBottom: marginBottom,
-            marginTop: marginTop,
-            marginLeft: marginLeft,
-            marginRight: marginRight
-         }}
-         onMouseOver={() => setShowController(true)}
-         onMouseLeave={() => setShowController(false)}
-         ref={ref}
-      >
-         <WidgetDragPreview isDragging={isDragging} id={id} />
-
-         <Box
-            sx={{
-               margin: '1em',
-               display: showWidget ? '' : 'none'
-            }}
-         >
-            <ThemeProvider theme={BaseTheme}>
-               <WidgetController
-                  visible={showController || isActve}
-                  onAdd={onAdd}
-                  onDelete={onDelete}
-                  onDrag={() => { setShowWidget(false); setIsDragging(true) }}
-                  onDragEnd={handleDragEnd}
-                  id={id}
-                  parentId={parentId}
-               />
-               <WidgetName
-                  value={name}
-                  id={id}
-                  setValue={handleWidgetNameChange}
-                  visible={showController || isActve}
-                  widgetNames={widgetNames}
-                  setWidgetNames={setWidgetNames}
-                  onFocus={() => { setActive(); setIsActive(true) }}
-               />
-
-               <TextBox
-                  placeholder={'Question'}
-                  value={value}
-                  minRows={1}
-                  setValue={handleWidgetValueChange}
-                  onFocus={() => { setActive(); setIsActive(true) }}
-                  sx={{
-                     fontSize: fontSize,
-                     color: fontColor,
-                     textAlign: align,
-                     fontFamily: fontFamily,
-                     lineHeight: lineHeight,
-                  }}
-                  className="widget"
-               />
-
-            </ThemeProvider>
-         </Box>
-      </Box >
+      <WidgetBase widget={widget}
+         handleWidgetCondition={handleWidgetCondition}
+         widgetNames={widgetNames}
+         setWidgetNames={setWidgetNames}
+         onChange={onChange}
+         onAdd={onAdd}
+         onDelete={onDelete}
+         setActive={setActive}
+         setInactive={setInactive}
+      />
    )
 }
 

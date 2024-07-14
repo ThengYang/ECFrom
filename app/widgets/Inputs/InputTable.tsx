@@ -1,46 +1,30 @@
-import { useState } from "react"
-import { Box, TableContainer, TableHead, TableBody, TableRow, TableCell, Table, TextField, Typography } from "@mui/material"
-
-import { TextBox } from "@/app/components/inputs/texts";
+import { useEffect } from "react";
 import { WIDGET_TYPE, INPUTTABLE } from "@/app/constants/WigetType"
-import WidgetDragPreview from "../WidgetDragPreview"
-import WidgetController from "../WidgetController"
-import WidgetName from "../WidgetName"
-import useOutsideClick from "../WidgetClickOutSideHook"
+import WidgetBase from "../WidgetBase";
+import Table from "@/app/components/inputs/table/Table";
+import GenerateWidget from "@/app/components/generators/GenerateWidget";
+import initialize from "../widgetInitializer";
+import { Box } from "@mui/material";
 
-interface InputTableProps extends INPUTTABLE {
+
+interface InputTableProps {
+   widget: INPUTTABLE
+   widgetNames: { [key: string]: any }
+   setWidgetNames: (item: { [key: string]: any }) => void
+   handleWidgetCondition: (parseEvent: string, data: any) => any
    onChange?: Function
    onAdd?: Function
    onDelete?: Function
-   widgetNames: { [key: string]: any }
-   setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: () => void
+   setActive?: (widget?: WIDGET_TYPE) => void
    setInactive?: () => void
 }
 
-
 const InputTable = (props: InputTableProps) => {
    const {
-      id,
-      parentId,
-      type,
-      name,
-      question,
-      answer,
-      label,
-      column,
-      row,
-      fontColor,
-      fontSize,
-      fontFamily,
-      lineHeight,
-      align,
-      marginBottom,
-      marginTop,
-      marginLeft,
-      marginRight,
+      widget,
       widgetNames,
       setWidgetNames,
+      handleWidgetCondition,
       onChange = (widget: WIDGET_TYPE) => void 0,
       onAdd = () => void 0,
       onDelete = () => void 0,
@@ -49,207 +33,111 @@ const InputTable = (props: InputTableProps) => {
 
    } = props
 
-   const [isActve, setIsActive] = useState<boolean>(false)
-   const [isHover, setIsHover] = useState<boolean>(false)
-   const [showWidget, setShowWidget] = useState<boolean>(true)
-   const [isDragging, setIsDragging] = useState<boolean>(false)
+   const setRowValue = () => {
+      if (widget.setValue) {
+         const newRow = [...widget.row]
+         for (const col of newRow) {
+            for (const item of widget.setValue) {
+               if (item.target && item.code) {
+                  const test = handleWidgetCondition('set value', item.code)
 
-   const ref = useOutsideClick((event: any) => {
-      if (isActve) {
-         const target = event.target as HTMLElement
-         if (target.classList.contains("widget")) {
-            if (ref && ref.current) ref.current.style.borderColor = '';
-            setIsActive(false)
-         }
-         else {
-            const activeWidgetEditor = document.querySelector('#active-widget-editor') as HTMLElement;
-            const fontPopper = document.querySelector('#font-size-id') as HTMLElement;
-            const fontFamilyPopper = document.querySelector('#font-family-id') as HTMLElement;
-            const genericSelectPopper = document.querySelector('#menu-') as HTMLElement;
-
-            if (activeWidgetEditor?.contains(event.target) ||
-               fontPopper?.contains(event.target) ||
-               fontFamilyPopper?.contains(event.target) ||
-               genericSelectPopper?.contains(event.target)) {
-            } else {
-               setInactive();
-               setIsActive(false);
+                  const testEc = new Function('widget, idx', test)
+                  const val = testEc(widget, widget.row.indexOf(col))
+                  col[item.target] = val
+               }
             }
          }
+         return newRow
       }
-   });
+      return undefined
+   }
 
-   const handleWidgetNameChanged = (newName: string) => {
+   useEffect(() => {
+      const newRow = setRowValue()
+      if (newRow) handleWidgetAnswerChange(newRow)
+
+   }, [widget.setValue])
+
+   const handleWidgetAnswerChange = (newRow: Array<{ id: number, [key: string]: any }>) => {
       onChange(
          {
-            id: id,
-            parentId: parentId,
-            type: type,
-            name: newName,
-            question: question,
-            answer: answer,
-            label: label,
-            row: row,
-            column: column,
-            fontColor: fontColor,
-            fontSize: fontSize,
-            fontFamily: fontFamily,
-            lineHeight: lineHeight,
-            align: align
+            ...widget,
+            row: newRow,
          }
       )
    }
 
-   const handleWidgetQuestionChange = (value: string) => {
-      onChange(
-         {
-            id: id,
-            parentId: parentId,
-            type: type,
-            name: name,
-            question: value,
-            answer: answer,
-            label: label,
-            row: row,
-            column: column,
-            fontColor: fontColor,
-            fontSize: fontSize,
-            fontFamily: fontFamily,
-            lineHeight: lineHeight,
-            align: align
-         }
-      )
+   const addFooter = (widgetType: string) => {
+      const { newWidget, newWidgetNames } = initialize(widget.id, widgetType, widgetNames);
+      console.log(newWidget)
+      onChange({
+         ...widget,
+         footer: newWidget,
+      })
+      setWidgetNames(newWidgetNames)
    }
 
-   const handleWidgetAnswerChange = (event: any) => {
-      if (event.target.value !== 'none') {
-         onChange(
-            {
-               id: id,
-               parentId: parentId,
-               type: type,
-               name: name,
-               question: question,
-               answer: [...answer, event.target.value],
-               label: label,
-               row: row,
-               column: column,
-               fontColor: fontColor,
-               fontSize: fontSize,
-               fontFamily: fontFamily,
-               lineHeight: lineHeight,
-               align: align
-            }
-         )
+   const updateFooter = (newWdiget: WIDGET_TYPE) => {
+
+      onChange({
+         ...widget,
+         footer: newWdiget
+      })
+   }
+
+   const deleteFooter = () => {
+      onChange({
+         ...widget,
+         footer: {
+            id: widget.footer.id,
+            parentId: widget.footer.parentId,
+            type: 'new-section',
+            name: ''
+         }
+      })
+   }
+
+   const setFooterActive = (childWidget: WIDGET_TYPE | null) => {
+      if (childWidget) {
+         setActive(childWidget)
+      }
+      else {
+         setActive(widget.footer)
       }
    }
 
-   const handleWidgetRemoveAnswer = (index: number) => {
-      onChange(
-         {
-            id: id,
-            parentId: parentId,
-            type: type,
-            name: name,
-            question: question,
-            answer: answer.filter((_, indx) => indx !== index),
-            label: label,
-            row: row,
-            column: column,
-            fontColor: fontColor,
-            fontSize: fontSize,
-            fontFamily: fontFamily,
-            lineHeight: lineHeight,
-            align: align
-         }
-      )
-   }
-
+   setRowValue()
    return (
-      <Box
-         sx={{
-            border: isActve ? '1px solid #03a9f4' : '0px',
-            '&:hover': { border: '1px solid #03a9f4' },
-            marginBottom: marginBottom,
-            marginTop: marginTop,
-            marginLeft: marginLeft,
-            marginRight: marginRight
-         }}
-         ref={ref}
+      <WidgetBase
+         widget={widget}
+         handleWidgetCondition={handleWidgetCondition}
+         widgetNames={widgetNames}
+         setWidgetNames={setWidgetNames}
+         onChange={onChange}
+         onAdd={onAdd}
+         onDelete={onDelete}
+         setActive={setActive}
+         setInactive={setInactive}
       >
-         <WidgetDragPreview isDragging={isDragging} id={id} />
-         <Box
-            sx={{
-               margin: '1em',
-               display: showWidget ? '' : 'none'
-            }}
-            onMouseOver={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
-         >
-            <WidgetController
-               visible={isHover || isActve}
-               onAdd={onAdd}
-               onDelete={onDelete}
-               id={id}
-               parentId={parentId}
-               onDrag={() => { setShowWidget(false); setIsDragging(true) }}
-               onDragEnd={() => { setShowWidget(true); setIsDragging(false) }}
-
-            />
-            <WidgetName
-               visible={isHover || isActve}
-               value={name}
-               id={id}
-               setValue={handleWidgetNameChanged}
-               widgetNames={widgetNames}
-               setWidgetNames={setWidgetNames}
-               onFocus={() => { setActive(); setIsActive(true) }}
-            />
-            <TextBox
-               placeholder={'Question'}
-               value={question}
-               minRows={1}
-               setValue={handleWidgetQuestionChange}
-               onFocus={() => { setActive(); setIsActive(true) }}
-               sx={{
-                  fontSize: fontSize,
-                  color: fontColor,
-                  textAlign: align,
-                  fontFamily: fontFamily,
-                  lineHeight: lineHeight,
-               }}
-               className="widget"
-            />
-            <TableContainer sx={{ mt: 1, }}>
-               <Table>
-                  <TableHead>
-                     <TableRow>
-                        {label.map((title, indx) =>
-                           <TableCell key={indx} sx={{ textAlign: 'center', border: '1px solid #c1c5cc', backgroundColor: '#03a9f4e3', minHeight: '20px' }}>
-                              <Typography sx={{ fontWeight: 600 }}>
-                                 {title}
-                              </Typography>
-
-                           </TableCell>
-                        )}
-                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                     {Array.from({ length: row }, (_, rowIdx) =>
-                        <TableRow key={rowIdx}>
-                           {Array.from({ length: column }, (_, colIdx) =>
-                              <TableCell key={`${rowIdx} - ${colIdx}`} sx={{ p: 0.3, border: '1px solid #c1c5cc' }}>
-                                 <TextBox sx={{ borderWidth: 0 }} />
-                              </TableCell>
-                           )}
-                        </TableRow>
-                     )}
-                  </TableBody>
-               </Table>
-            </TableContainer>
-
-         </Box>
-      </Box>
+         <Table
+            column={widget.column}
+            row={widget.row}
+            setValue={handleWidgetAnswerChange}
+            makeFooter={() =>
+               <GenerateWidget
+                  item={widget.footer}
+                  handleWidgetCondition={handleWidgetCondition}
+                  setWidgetNames={setWidgetNames}
+                  onDelete={deleteFooter}
+                  onAdd={(id: number, itemType: string) => addFooter(itemType)}
+                  onChange={(newItem: WIDGET_TYPE) => updateFooter(newItem)}
+                  widgetNames={widgetNames}
+                  setActive={setFooterActive}
+                  setInactive={setInactive}
+               />
+            }
+         />
+      </WidgetBase>
    )
 }
 

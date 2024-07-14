@@ -56,6 +56,7 @@ const FontColors = [
 ]
 
 const FontFamily = [
+   'Default',
    'Arial',
    'Brush Script MT',
    'Courier New',

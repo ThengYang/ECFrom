@@ -1,14 +1,8 @@
 "use client"
 
-import { useState } from "react";
-
-import { Grid, IconButton, TextField } from "@mui/material";
+import { Button, Grid, IconButton, TextField } from "@mui/material";
 import { HexAlphaColorPicker } from "react-colorful";
-
-import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
-import ColorizeRoundedIcon from '@mui/icons-material/ColorizeRounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 
 import { FontColors } from "@/app/constants/Font";
@@ -50,23 +44,31 @@ const ColorSelect = (props: ColorSelectProps) => {
                InputProps={{
                   style: {
                      height: '25px',
-                     fontSize: 12
+                     fontSize: 12,
+                     borderRadius: 0
                   }
                }}
             />
          </Grid>
          <Grid item xs={2}>
-            <SquareRoundedIcon sx={{ color: color }} />
+            <SquareRoundedIcon sx={{ color: color === 'inherit' ? '#ffffff00' : color, fontSize: 32 }} />
          </Grid>
          <Grid item xs={2}>
             <IconButton size="small">
-               <SaveRoundedIcon />
+               <SaveRoundedIcon sx={{ fontSize: 32 }} />
             </IconButton>
-
          </Grid>
-
          <Grid item xs={12} sx={{ alignItems: 'center' }} className="color-select">
             <HexAlphaColorPicker color={color} onChange={onChange} />
+         </Grid>
+         <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'right', }}>
+            <Button
+               size="small"
+               sx={{ textTransform: 'none' }}
+               onClick={() => onChange("inherit")}
+            >
+               clear
+            </Button>
          </Grid>
       </Grid>
    )

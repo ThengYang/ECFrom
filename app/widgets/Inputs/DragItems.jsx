@@ -20,7 +20,7 @@ const TextResponse = () => {
             <ListItemIcon>
                <ShortTextIcon />
             </ListItemIcon>
-            <ListItemText primary="Text Response" />
+            <ListItemText primary="Text Box" />
          </ListItemButton>
       </List>
    )

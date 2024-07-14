@@ -4,17 +4,18 @@ import styles from "./Text.module.css";
 import { useState } from "react";
 
 interface TextLineProps {
-   placeholder?: string,
-   value?: string,
-   setValue?: (val: string) => void,
-   onFocus?: (event: any) => void,
+   placeholder?: string
+   value?: string
+   required?: boolean
+   setValue?: (val: string) => void
+   onFocus?: (event: any) => void
    onBlur?: (event: any) => void
    type?: 'text' | 'number' | 'phone' | 'email'
    sx?: any
-   style?: any,
-   id?: string,
+   style?: any
+   id?: string
    className?: string
-
+   variant?: string
 }
 
 const TextLine = (props: TextLineProps) => {
@@ -23,13 +24,15 @@ const TextLine = (props: TextLineProps) => {
       placeholder = '',
       value = '',
       type = 'text',
+      required = false,
       setValue = () => void 0,
       onFocus = () => void 0,
       onBlur = () => void 0,
       sx = null,
       style = null,
       id = '',
-      className = ''
+      className = '',
+      variant = 'under'
    } = props
 
    const [error, setError] = useState(false)
@@ -82,6 +85,10 @@ const TextLine = (props: TextLineProps) => {
          is_error ? setHelperText("Please enter a valid email address.") : setHelperText('')
          setError(is_error)
       }
+      if (required && value === '') {
+         setError(true)
+         setHelperText("Please fill this field.")
+      }
       onBlur(event);
    }
 
@@ -94,18 +101,19 @@ const TextLine = (props: TextLineProps) => {
          onFocus={handleOnFocus}
          onChange={handleSetValue}
          onBlur={handleOnBlur}
-         variant="outlined"
+         variant={variant === 'inline' ? "standard" : 'outlined'}
          className={styles.number}
+         size="small"
          InputProps={{
             sx: {
-               borderRadius: '0px',
+               borderRadius: '5px',
             },
 
          }}
          inputProps={{
             sx: style,
             id: id,
-            className: className
+            className: className,
          }}
          error={error}
          helperText={helperText}

@@ -20,8 +20,9 @@ import WidgetDrawer from "../components/menus/WidgetDrawer";
 import DropSpace from "../components/dragDrop/DropSpace";
 import GenerateWidget from "../components/generators/GenerateWidget";
 import WidgetDrogPad from "../widgets/WidgetDropPad";
-import { WIDGET_TYPE, IS_INPUTTEXT, IS_TEXT } from "../constants/WigetType";
+import { IS_FORMGRID, IS_INPUTTABLE, WIDGET_TYPE } from "../constants/WigetType";
 import initialize from "../widgets/widgetInitializer";
+import parseCondition from "../widgets/WidgetConditionParser";
 
 import Section from "../widgets/layout/Section";
 import NavBar from "./NavBar";
@@ -110,63 +111,110 @@ const AccountsPage = (props: PageProps) => {
   const [open, setOpen] = useState(true);
   const [activeWidget, setActiveWidget] = useState<WIDGET_TYPE | null>(null)
 
-  const [widgets, setWidgets] = useState<Array<WIDGET_TYPE>>([
-    {
-      id: uuidv4(),
-      parentId: pageId as string,
-      type: 'text',
-      name: 'Title 1',
-      value: 'Add your title text here',
-      fontSize: 24,
-      fontColor: '#000000',
-      fontFamily: 'Arial',
-      lineHeight: 1.5,
-      align: 'center',
-      marginTop: 0,
-      marginRight: 0,
-      marginLeft: 0,
-      marginBottom: 8
-    }
-  ])
+  const [widgets, setWidgets] = useState<Array<WIDGET_TYPE>>([])
 
-  const [widgetNames, setwidgetNames] = useState<{ [key: string]: any }>({ 'Title 1': widgets[0].id, 'length': 1 });
+  const [widgetNames, setwidgetNames] = useState<{ [key: string]: any }>({ 'length': 0 });
 
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
 
+  const handleGetWidget = (id: string, gridItems?: Array<Array<WIDGET_TYPE>> | null): any => {
+    let foundWidget = null
+    if (gridItems) {
+      for (const itemCol of gridItems) {
+        foundWidget = itemCol.find(widget => IS_FORMGRID(widget) ? handleGetWidget(id, gridItems = widget.items) : widget.id === id)
+        if (foundWidget) {
+          return foundWidget
+        }
+      }
+    }
+
+    else {
+      for (const widget of widgets) {
+        if (widget.id === id) {
+          return widget
+        }
+        else if (IS_FORMGRID(widget)) {
+          foundWidget = handleGetWidget(id, gridItems = widget.items)
+          if (foundWidget) return foundWidget
+        }
+        else if (IS_INPUTTABLE(widget)) {
+          if (widget.footer.id === id) {
+            return widget.footer
+          }
+          else if (IS_FORMGRID(widget.footer)) {
+            foundWidget = handleGetWidget(id, gridItems = widget.footer.items)
+            if (foundWidget) return foundWidget
+          }
+        }
+      }
+    }
+
+    return foundWidget
+  }
+
   const handleAddWidget = (id: string | null, itemType: string) => {
     const tempWidgets = [...widgets]
 
-    const { widget, names } = initialize(pageId, itemType, widgetNames)
+    const { newWidget, newWidgetNames } = initialize(pageId, itemType, widgetNames)
 
-    if (id !== null && widget.id !== '-1') {
+    if (id !== null && newWidget.id !== '-1') {
 
       const index = widgets.findIndex(widget => widget.id === id)
       if (index !== -1) {
         const tempWidgets = [...widgets]
-        tempWidgets[index] = widget;
+        tempWidgets[index] = newWidget;
         setWidgets(tempWidgets);
       }
     }
 
-    else if (widget.id !== '-1') {
-      tempWidgets.push(widget)
+    else if (newWidget.id !== '-1') {
+      tempWidgets.push(newWidget)
       setWidgets(tempWidgets)
     }
-    setWidgetNames(names);
-  }
-
-  const handleAddSubWidget = (updatedWiget: WIDGET_TYPE) => {
-    handleUpdateWidget(updatedWiget);
+    setWidgetNames(newWidgetNames);
   }
 
   const handleUpdateWidget = (item: WIDGET_TYPE) => {
-    setWidgets((prevWidgets) =>
-      prevWidgets.map(widget =>
-        widget.id === item.id ? item : widget
+    if (item.parentId === pageId || !item.parentId) {
+      setWidgets((prevWidgets) =>
+        prevWidgets.map(widget =>
+          widget.id === item.id ? item : widget
+        )
       )
-    )
+    }
+    else {
+      const parentWidget = handleGetWidget(item.parentId)
+
+      if (parentWidget && parentWidget.type === 'grid') {
+        for (let row of parentWidget.items) {
+          const colIndex = row.findIndex((widget: WIDGET_TYPE) => widget.id == item.id)
+          if (colIndex !== -1) {
+            row[colIndex] = item;
+            break;
+          }
+        }
+
+        setWidgets((prevWidgets) =>
+          prevWidgets.map(widget =>
+            widget.id === parentWidget.id ? parentWidget : IS_INPUTTABLE(widget) ?
+              widget.footer.id === parentWidget.id ? { ...widget, footer: parentWidget } : widget : widget
+          )
+        )
+      }
+      else if (parentWidget && parentWidget.type === 'table') {
+
+        parentWidget.footer = item
+        setWidgets((prevWidgets) =>
+          prevWidgets.map(widget =>
+            widget.id === parentWidget.id ? parentWidget : widget
+          )
+        )
+      }
+    }
+
+
     if (activeWidget?.id === item.id) {
       setActiveWidget(item)
     }
@@ -220,10 +268,12 @@ const AccountsPage = (props: PageProps) => {
     }
   }
 
-
-
   const setWidgetNames = (names: { [key: string]: any }) => {
     setwidgetNames(names);
+  }
+
+  const handleWidgetCondition = (parseEvent: string, data: any): any => {
+    return parseCondition(handleGetWidget, widgetNames, parseEvent, data)
   }
 
   return (
@@ -234,12 +284,12 @@ const AccountsPage = (props: PageProps) => {
             <Drawer
               variant="permanent"
               id="widget-drawer"
-              sx={{ width: open ? "25%" : '0%' }}
+              sx={{ width: open ? '340px' : '0px' }}
               PaperProps={{
-                style: { width: open ? "25%" : '0%' },
+                style: { width: open ? '340px' : '0px' },
               }}
             >
-              <DrawerHeader>
+              <DrawerHeader sx={{ position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 }}>
                 <Typography variant="h5" sx={{ width: 'fit-content', margin: 'auto' }}>
                   Widgets
                 </Typography>
@@ -248,10 +298,11 @@ const AccountsPage = (props: PageProps) => {
                 activeWidget={activeWidget}
                 widgetNames={widgetNames}
                 setWidgetNames={setWidgetNames}
+                getWidget={handleGetWidget}
                 updateWidget={handleUpdateWidget}
               />
             </Drawer>
-            <Box component="main" className="relative h-screen  items-center w-full">
+            <Box component="main" className="relative h-screen  items-center w-full overflow-x-hidden">
               <NavBar />
               <IconButton
                 className="sticky bg-white w-1 rounded-none hover:bg-white"
@@ -278,16 +329,17 @@ const AccountsPage = (props: PageProps) => {
                         onDelete={handleDeleteWidget}
                         onAdd={item.type === 'new-section' ? handleAddWidget : handleAddWidgetAbove}
                         onMove={handleMoveWidget}
-                        updateSubItems={handleAddSubWidget}
+                        updateSubItems={handleUpdateWidget}
                         widgetNames={widgetNames}
                         setWidgetNames={setWidgetNames}
-                        setActive={(childItem: WIDGET_TYPE | null) => { childItem ? setActiveWidget(childItem) : setActiveWidget(item) }}
+                        setActive={(childItem: WIDGET_TYPE | null) => childItem ? setActiveWidget(childItem) : setActiveWidget(item)}
                         setInactive={() => setActiveWidget(null)}
+                        handleWidgetCondition={handleWidgetCondition}
                       />
                     </WidgetDrogPad>
                   )}
                   <Section onAdd={handleAddWidget} />
-                </Box> : <Preview widgets={widgets} />
+                </Box> : <Preview widgets={widgets} updateWidget={handleUpdateWidget} handleWidgetCondition={handleWidgetCondition} />
               }
             </Box>
           </Box>

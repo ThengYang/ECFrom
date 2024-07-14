@@ -1,7 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { WIDGET_TYPE } from '../constants/WigetType';
 
-const initialize = (parentId: string, widgetType: string, widgetNames: { [key: string]: any }) => {
+export default function initialize(
+   parentId: string,
+   widgetType: string,
+   widgetNames: { [key: string]: any },
+) {
 
    let newWidget: WIDGET_TYPE = {
       type: '',
@@ -11,6 +15,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
    }
 
    let widgetName = ''
+   let widgetMetaType = 'text'
    const widgetId = uuidv4();
 
    switch (widgetType) {
@@ -18,6 +23,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Title ${i}`]) {
                widgetName = `Title ${i}`
+               widgetMetaType = 'text'
                break;
             }
          }
@@ -27,17 +33,25 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'text',
             name: widgetName,
-            value: 'Add your title text here',
+            question: 'Add your title text here',
             fontSize: 24,
+            fontWeight: 900,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
-            fontColor: '#000000',
-            fontFamily: 'Arial',
+            letterSpacing: 0,
+            fontColor: 'inherit',
+            fontFamily: 'Default',
             align: 'center',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
-            marginBottom: 1
+            marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit'
          }
          break;
 
@@ -45,6 +59,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Subtitle ${i}`]) {
                widgetName = `Subtitle ${i}`
+               widgetMetaType = 'text'
                break;
             }
          }
@@ -54,26 +69,54 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'text',
             name: widgetName,
-            value: 'Add your subtitle text here',
+            question: 'Add your subtitle text here',
             fontSize: 18,
-            fontColor: '#000000',
-            fontFamily: 'Arial',
+            fontColor: 'inherit',
+            fontFamily: 'Default',
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
-            marginBottom: 1
+            marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit'
          }
          break;
 
       case 'grid':
+         widgetName = 'grid'
+         widgetMetaType = 'grid'
+
          newWidget = {
             id: widgetId,
             parentId: parentId,
             type: 'grid',
             name: '',
+            fontFamily: 'Default',
+            fontColor: 'inherit',
+            fontSize: 16,
+            fontWeight: 500,
+            fontStyle: 'Normal',
+            lineHeight: 1.5,
+            letterSpacing: 0,
+            align: 'center',
+            justify: 'center',
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             row: 2,
             column: 2,
             items: [
@@ -111,6 +154,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Question ${i}`]) {
                widgetName = `Question ${i}`
+               widgetMetaType = 'text response'
                break;
             }
          }
@@ -120,20 +164,28 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'text response',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: '',
             require: false,
-            responseType: 'short answer'
+            responseType: 'short answer',
          }
          break;
 
@@ -141,6 +193,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Date time ${i}`]) {
                widgetName = `Date time ${i}`
+               widgetMetaType = "datetime"
                break;
             }
          }
@@ -150,16 +203,24 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'datetime',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: '',
             require: false,
@@ -171,6 +232,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Select ${i}`]) {
                widgetName = `Select ${i}`
+               widgetMetaType = 'select'
                break;
             }
          }
@@ -180,16 +242,24 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'select',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: '',
             options: [{ key: 0, value: 'Option' }],
@@ -201,6 +271,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Multi Select ${i}`]) {
                widgetName = `Multi Select ${i}`
+               widgetMetaType = 'multi select'
                break;
             }
          }
@@ -210,16 +281,24 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'multi select',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: [],
             options: [{ key: 0, value: 'Option' }],
@@ -231,6 +310,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Checklist ${i}`]) {
                widgetName = `Checklist ${i}`
+               widgetMetaType = 'checklist'
                break;
             }
          }
@@ -240,16 +320,24 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'checklist',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: [],
             options: [{ key: 0, value: 'Option 1' }, { key: 1, value: 'Option 2' }],
@@ -264,6 +352,7 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
          for (let i = 1; i < widgetNames.length + 2; i++) {
             if (!widgetNames[`Table ${i}`]) {
                widgetName = `Table ${i}`
+               widgetMetaType = 'table'
                break;
             }
          }
@@ -273,29 +362,107 @@ const initialize = (parentId: string, widgetType: string, widgetNames: { [key: s
             parentId: parentId,
             type: 'table',
             name: widgetName,
-            fontColor: '#000000',
+            fontColor: 'inherit',
             fontSize: 16,
-            fontFamily: 'Arial',
+            fontFamily: 'Default',
+            fontWeight: 500,
+            fontStyle: 'Normal',
             lineHeight: 1.5,
+            letterSpacing: 0,
             align: 'left',
             justify: 'left',
             marginTop: 0,
             marginRight: 0,
             marginLeft: 0,
             marginBottom: 1,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: 'inherit',
             question: '',
             answer: [[]],
-            label: ['Column 1', 'Column 2', 'Column 3'],
-            column: 3,
-            row: 2,
+            column: [
+               {
+                  field: 'id',
+                  headerName: 'Index',
+                  headerAlign: 'center',
+                  align: 'center',
+                  type: 'number',
+                  width: 75,
+                  editable: false,
+                  sortable: true,
+                  filterable: false,
+                  resizable: false,
+                  menu: false,
+               },
+               {
+                  field: 'column_2',
+                  headerName: 'Column 2',
+                  headerAlign: 'center',
+                  align: 'center',
+                  type: 'string',
+                  flex: 1,
+                  width: 100,
+                  editable: true,
+                  sortable: true,
+                  filterable: true,
+                  prefix: '$',
+                  valueFormatter: (params) => `$${params}`,
+                  menu: true,
+               },
+               {
+                  field: 'column_3',
+                  headerName: 'Column 3',
+                  headerAlign: 'center',
+                  align: 'center',
+                  type: 'string',
+                  flex: 1,
+                  width: 100,
+                  editable: true,
+                  sortable: true,
+                  filterable: true,
+                  menu: true,
+               },
+               {
+                  field: 'column_4',
+                  headerName: 'Column 4',
+                  headerAlign: 'center',
+                  align: 'center',
+                  type: 'string',
+                  flex: 1,
+                  width: 100,
+                  editable: true,
+                  sortable: true,
+                  filterable: true,
+                  menu: true,
+               },
+            ],
+            row: [
+               { id: 0, column_2: '', column_3: '', column_4: '' },
+               { id: 1, column_2: '', column_3: '', column_4: '' },
+               { id: 2, column_2: '', column_3: '', column_4: '' },
+               { id: 3, column_2: '', column_3: '', column_4: '' },
+            ],
+            footer: {
+               id: uuidv4(),
+               parentId: widgetId,
+               type: 'new-section',
+               name: ''
+            },
+
             require: false,
          }
          break;
    }
 
-
-   return { widget: newWidget, names: { ...widgetNames, [widgetName]: widgetId, length: widgetNames.length + 1 } }
+   return {
+      newWidget: newWidget,
+      newWidgetNames:
+      {
+         ...widgetNames,
+         [widgetName]: { id: widgetId, type: widgetMetaType },
+         length: widgetNames.length + 1
+      }
+   }
 }
-
-
-export default initialize

@@ -1,11 +1,25 @@
+import { ReactNode } from "react";
+
 export type WIDGET_TYPE = NEWSECTION | TEXT | FORMGRID |
    INPUTTEXT | INPUTSELECT | INPUTMULTISELECT | INPUTDATETIME |
    INPUTCHECKLIST | INPUTTABLE
 
-export function HAS_STYLE_WIDGETS(object: any): object is
+export type WIDGET_BLOCK = TEXT | FORMGRID |
+   INPUTTEXT | INPUTSELECT | INPUTMULTISELECT | INPUTDATETIME |
+   INPUTCHECKLIST | INPUTTABLE
+
+export type WIDGET_FILL = TEXT | INPUTTEXT | INPUTSELECT | INPUTMULTISELECT | INPUTDATETIME |
+   INPUTCHECKLIST | INPUTTABLE
+
+export type WIDGET_RESPVAR = INPUTTEXT | INPUTDATETIME | INPUTCHECKLIST
+
+
+
+export function HAS_STYLE_WIDGETS(object: any): object is FORMGRID |
    TEXT | INPUTTEXT | INPUTMULTISELECT | INPUTSELECT | INPUTDATETIME |
    INPUTCHECKLIST | INPUTTABLE {
    return (
+      IS_FORMGRID(object) ||
       IS_TEXT(object) ||
       IS_INPUTTEXT(object) ||
       IS_INPUTSELECT(object) ||
@@ -26,7 +40,7 @@ export function HAS_RESPOND_TYPE(object: any): object is
 }
 
 export function GET_RESPOND_TYPE(object: any): Array<string> {
-   if (IS_INPUTTEXT(object)) return ['short answer', 'paragraph', 'Number', 'Email', 'Phone'];
+   if (IS_INPUTTEXT(object)) return ['short answer', 'paragraph', 'number', 'email', 'phone'];
    if (IS_INPUTDATETIME(object)) return ['date', 'time', 'datetime', 'daterange'];
    if (IS_INPUTCHECKLIST(object)) return ['radio', 'list'];
 
@@ -77,17 +91,39 @@ export interface TEXT {
    parentId: string,
    type: string,
    name: string,
-   value: string,
+   question: string,
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
    align: 'left' | 'center' | 'right' | 'justify',
    justify: 'left' | 'center' | 'right',
+   backgroundColor: string,
    marginTop: number,
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 
 export function IS_TEXT(object: any): object is TEXT {
@@ -102,6 +138,38 @@ export interface FORMGRID {
    row: number,
    column: number,
    items: Array<Array<WIDGET_TYPE>>
+   fontSize: number,
+   fontColor: string,
+   fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
+   lineHeight: number,
+   letterSpacing: number,
+   align: 'left' | 'center' | 'right' | 'justify',
+   justify: 'left' | 'center' | 'right',
+   backgroundColor: string,
+   marginTop: number,
+   marginBottom: number,
+   marginLeft: number,
+   marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 export function IS_FORMGRID(object: any): object is FORMGRID {
    return object?.type === 'grid'
@@ -115,17 +183,40 @@ export interface INPUTTEXT {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
-   question: string,
-   answer: string,
+   letterSpacing: number,
+   backgroundColor: string,
    align: 'left' | 'center' | 'right' | 'justify',
    justify: 'left' | 'center' | 'right',
    marginTop: number,
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number
+   width: number,
+   height: number,
+   question: string,
+   answer: string,
    require: boolean,
-   responseType: 'short answer' | 'paragraph' | 'email' | 'number' | 'phone'
+   responseType: 'short answer' | 'paragraph' | 'email' | 'number' | 'phone',
+   variant: string,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 export function IS_INPUTTEXT(object: any): object is INPUTTEXT {
    return object?.type === 'text response'
@@ -139,7 +230,11 @@ export interface INPUTSELECT {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
+   backgroundColor: string,
    question: string,
    answer: string,
    options: Array<{ key: number, value: string }>,
@@ -149,7 +244,25 @@ export interface INPUTSELECT {
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
    require: boolean,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 export function IS_INPUTSELECT(object: any): object is INPUTSELECT {
    return object?.type === 'select'
@@ -163,7 +276,11 @@ export interface INPUTMULTISELECT {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
+   backgroundColor: string,
    question: string,
    answer: Array<string>,
    options: Array<{ key: number, value: string }>,
@@ -173,7 +290,25 @@ export interface INPUTMULTISELECT {
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
    require: boolean,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 export function IS_INPUTMULTISELECT(object: any): object is INPUTMULTISELECT {
    return object?.type === 'multi select'
@@ -187,7 +322,11 @@ export interface INPUTDATETIME {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
+   backgroundColor: string,
    question: string,
    answer: string,
    align: 'left' | 'center' | 'right' | 'justify',
@@ -196,8 +335,26 @@ export interface INPUTDATETIME {
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
    require: boolean,
-   responseType: 'date' | 'datetime' | 'time' | 'daterange'
+   responseType: 'date' | 'datetime' | 'time' | 'daterange',
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 
 export function IS_INPUTDATETIME(object: any): object is INPUTDATETIME {
@@ -205,7 +362,6 @@ export function IS_INPUTDATETIME(object: any): object is INPUTDATETIME {
 }
 
 export interface INPUTCHECKLIST {
-
    id: string,
    parentId: string,
    type: string,
@@ -213,7 +369,11 @@ export interface INPUTCHECKLIST {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
+   backgroundColor: string,
    question: string,
    answer: Array<string>,
    options: Array<{ key: number, value: string }>,
@@ -224,8 +384,26 @@ export interface INPUTCHECKLIST {
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
    require: boolean,
-   responseType: 'radio' | 'list'
+   responseType: 'radio' | 'list',
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 
 export function IS_INPUTCHECKLIST(object: any): object is INPUTCHECKLIST {
@@ -241,25 +419,70 @@ export interface INPUTTABLE {
    fontSize: number,
    fontColor: string,
    fontFamily: string,
+   fontWeight: number,
+   fontStyle: string,
    lineHeight: number,
+   letterSpacing: number,
+   backgroundColor: string,
    question: string,
    answer: Array<Array<string>>,
-   label: Array<string>,
-   column: number,
-   row: number,
+   column: Array<
+      {
+         field: string,
+         headerName: string,
+         headerAlign: 'left' | 'center' | 'right',
+         align: 'left' | 'center' | 'right',
+         type: 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions'
+         width?: number,
+         minWidth?: number,
+         maxWidth?: number,
+         flex?: number
+         editable?: boolean,
+         sortable?: boolean,
+         filterable?: boolean,
+         resizable?: boolean,
+         menu: boolean,
+         min?: number,
+         max?: number,
+         prefix?: string,
+         renderHeader?: () => ReactNode,
+         valueFormatter?: (params: any) => void,
+         valueGetter?: (params: any) => void,
+      }
+   >,
+
+   row: Array<{ id: number, [key: string]: any }>,
+   footer: WIDGET_TYPE,
    align: 'left' | 'center' | 'right' | 'justify',
    justify: 'left' | 'center' | 'right',
    marginTop: number,
    marginBottom: number,
    marginLeft: number,
    marginRight: number,
+   paddingTop: number,
+   paddingBottom: number,
+   paddingLeft: number,
+   paddingRight: number,
+   width: number,
+   height: number,
    require: boolean,
+   visibility?: {
+      variables?: Array<string>,
+      operators?: Array<string>,
+      conditions?: Array<string>,
+      mergers?: Array<string>
+      conditional: boolean,
+      action: string,
+   }
+   setValue?: Array<{
+      target: string
+      code: string
+   }>
 }
 
 export function IS_INPUTTABLE(object: any): object is INPUTTABLE {
    return object?.type === 'table'
 }
-
 
 export interface PAGE {
    id: string,

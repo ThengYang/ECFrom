@@ -1,8 +1,8 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import dayjs, { Dayjs } from 'dayjs';
 
-import { Grid, Popover, Box } from "@mui/material";
+import { Grid, Popover } from "@mui/material";
 import { DateField } from '@mui/x-date-pickers/DateField';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -219,8 +219,8 @@ const DateRange = (props: DateRangeProps) => {
 
    const [startDate, setStartDate] = useState<Dayjs>(dayjs());
    const [endDate, setEndDate] = useState<Dayjs>(dayjs().add(1, 'month'))
-   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null)
-   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null)
+   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(value ? dayjs(value.split("-")[0]) : null)
+   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(value ? dayjs(value.split("-")[1]) : null)
    const [toSetDate, setToSetDate] = useState('start')
    const [fieldFocus, setFieldFocus] = useState<string>('')
 
@@ -257,6 +257,7 @@ const DateRange = (props: DateRangeProps) => {
             setToSetDate('start')
             setFieldFocus('start')
          }
+         value ? setValue(value.split("-")[0] + "-" + newDate.format("MM/DD/YYYY")) : setValue("-" + newDate.format("MM/DD/YYYY"))
       }
       else if (toSetDate === 'start') {
          setSelectedStartDate(newDate)
@@ -265,6 +266,7 @@ const DateRange = (props: DateRangeProps) => {
          if (selectedEndDate && newDate > selectedEndDate) {
             setSelectedEndDate(null);
          }
+         value ? setValue(newDate.format("MM/DD/YYYY") + "-" + value.split("-")[1]) : setValue(newDate.format("MM/DD/YYYY") + "-")
       }
    }
    return (

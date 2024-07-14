@@ -1,21 +1,20 @@
 
 
 import { useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
 
-import { Grid, Box, IconButton, Tooltip } from "@mui/material";
-import { FORMGRID } from "@/app/constants/WigetType";
+import { Grid, Box, IconButton, Divider } from "@mui/material";
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
-import { WIDGET_TYPE } from "@/app/constants/WigetType";
+import { WIDGET_TYPE, FORMGRID } from "@/app/constants/WigetType";
+import useOutsideClick from "../WidgetClickOutSideHook";
 import WidgetDragPreview from "../WidgetDragPreview";
 import GenerateWidget from "@/app/components/generators/GenerateWidget";
 import WidgetController from "../WidgetController";
 import WidgetDrogPad from "../WidgetDropPad";
 import initialize from "../widgetInitializer";
 
-
-interface FormGridProps extends FORMGRID {
+interface FormGridProps {
+   widget: FORMGRID
    onChange?: Function
    onAdd?: Function
    onDelete?: Function
@@ -24,16 +23,11 @@ interface FormGridProps extends FORMGRID {
    setWidgetNames: (item: { [key: string]: any }) => void
    setActive?: (item: WIDGET_TYPE | null) => void
    setInactive?: () => void
+   handleWidgetCondition?: (parseEvent: string, data: any) => any
 }
 const FormGrid = (props: FormGridProps) => {
    const {
-      id,
-      parentId,
-      type,
-      name,
-      row,
-      column,
-      items,
+      widget,
       onAdd = () => void 0,
       onDelete = () => void 0,
       updateSubItems = () => void 0,
@@ -41,86 +35,66 @@ const FormGrid = (props: FormGridProps) => {
       setWidgetNames,
       setActive = () => void 0,
       setInactive = () => void 0,
+      handleWidgetCondition = () => void 0
    } = props
 
+   const [isActve, setIsActive] = useState<boolean>(false)
    const [showController, setShowController] = useState<boolean>(false)
    const [showWidget, setShowWidget] = useState<boolean>(true)
    const [isDragging, setIsDragging] = useState<boolean>(false)
 
-   const addColumn = () => {
-      const tempItems = [...items]
-      for (const ite of tempItems) {
-         ite.push(
-            {
-               id: uuidv4(),
-               parentId: id,
-               type: 'new-section',
-               name: ''
+   const ref = useOutsideClick((event: any) => {
+      if (isActve) {
+         const target = event.target as HTMLElement
+         if (target.classList.contains("widget")) {
+            if (ref && ref.current) ref.current.style.borderColor = '';
+            setIsActive(false)
+         }
+         else {
+            const activeWidgetEditor = document.querySelector('#active-widget-editor') as HTMLElement;
+            const fontPopper = document.querySelector('#font-size-id') as HTMLElement;
+            const fontFamilyPopper = document.querySelector('#font-family-id') as HTMLElement;
+            const genericSelectPopper = document.querySelector('#menu-') as HTMLElement;
+
+            if (activeWidgetEditor?.contains(event.target) ||
+               fontPopper?.contains(event.target) ||
+               fontFamilyPopper?.contains(event.target) ||
+               genericSelectPopper?.contains(event.target)) {
+            } else {
+               setInactive();
+               setIsActive(false);
             }
-         )
+         }
       }
-
-      const updatedWiget = {
-         id: id,
-         type: type,
-         name: name,
-         items: tempItems,
-         column: column + 1,
-         row: row
-      }
-      updateSubItems(updatedWiget)
-   }
-
-   const addRow = () => {
-
-      const tempItems = [...items]
-      tempItems.push(
-         new Array(column).fill(
-            {
-               id: uuidv4(),
-               parentId: id,
-               type: 'new-section'
-            }
-         )
-      )
-
-      const updatedWiget = {
-         id: id,
-         type: type,
-         name: name,
-         items: tempItems,
-         column: column,
-         row: row + 1
-      }
-      updateSubItems(updatedWiget)
-   }
+   });
 
    const updateItem = (rowIndex: number, colIndex: number, newItem: WIDGET_TYPE) => {
-      let updatedItems = [...items]
+      let updatedItems = [...widget.items]
       updatedItems[rowIndex][colIndex] = newItem
-      updateSubItems(updatedItems)
+
+      updateSubItems({ ...widget, items: updatedItems })
       setActive(newItem)
    }
-   const addItem = (rowIndex: number, colIndex: number, itemType: string) => {
-      const { widget, names } = initialize(id, itemType, widgetNames);
 
-      if (widget.id !== '-1') {
-         let updateItems = [...items]
-         updateItems[rowIndex][colIndex] = widget
+   const addItem = (rowIndex: number, colIndex: number, itemType: string) => {
+      const { newWidget, newWidgetNames } = initialize(widget.id, itemType, widgetNames);
+      if (newWidget.id !== '-1') {
+         let updateItems = [...widget.items]
+         updateItems[rowIndex][colIndex] = newWidget
          updateSubItems(updateItems)
       }
-      setWidgetNames(names)
+      setWidgetNames(newWidgetNames)
    }
 
    const deleteItem = (rowIndex: number, colIndex: number) => {
-      let updatedItems = [...items]
+      let updatedItems = [...widget.items]
       let tempWidgetNames = widgetNames
       delete tempWidgetNames[updatedItems[rowIndex][colIndex].name];
       tempWidgetNames.length -= 1;
 
       updatedItems[rowIndex][colIndex] = {
          id: updatedItems[rowIndex][colIndex].id as string,
-         parentId: items[rowIndex][colIndex].parentId as string,
+         parentId: widget.items[rowIndex][colIndex].parentId as string,
          type: 'new-section',
          name: ''
       }
@@ -133,11 +107,11 @@ const FormGrid = (props: FormGridProps) => {
       let sourceIndices = [-1, -1]
       let targetIndices = [-1, -1]
 
-      let updatedItems = [...items]
+      let updatedItems = [...widget.items]
 
-      for (let ii = 0; ii < items.length; ii++) {
-         const sourceCol = items[ii].findIndex(item => item.id === sourceId)
-         const targetCol = items[ii].findIndex(item => item.id === targetId)
+      for (let ii = 0; ii < widget.items.length; ii++) {
+         const sourceCol = widget.items[ii].findIndex(item => item.id === sourceId)
+         const targetCol = widget.items[ii].findIndex(item => item.id === targetId)
 
          if (sourceCol > -1) {
             sourceIndices = [ii, sourceCol]
@@ -151,24 +125,55 @@ const FormGrid = (props: FormGridProps) => {
             updatedItems[sourceIndices[0]][sourceIndices[1]] = updatedItems[targetIndices[0]][targetIndices[1]]
             updatedItems[targetIndices[0]][targetIndices[1]] = sourceWidget
             updateSubItems(updatedItems)
-
-            break
+            break;
          }
       }
    }
 
+   const handleBoxClick = (event: any) => {
+
+      if (event.target.classList.contains('grid-section') || event.target.classList.contains('form-section')) {
+         console.log("Grid clicked", event.target)
+         setActive(null);
+         setIsActive(true);
+      }
+   }
+
+   const isVisible = widget.visibility?.conditional ?
+      handleWidgetCondition('visibility', widget.visibility) :
+      widget.visibility?.action === 'hidden' ? false : true
+
    return (
       <Box sx={{ position: 'relative', marginBottom: '2em' }}>
-
-         <WidgetDragPreview isDragging={isDragging} id={id} onAdd={onAdd} />
-         <Box onMouseOver={() => setShowController(true)}
-            onMouseLeave={() => setShowController(false)}
+         <WidgetDragPreview isDragging={isDragging} id={widget.id} onAdd={onAdd} />
+         <Box
             sx={{
-               width: '100%',
-               margin: 'auto',
+               backgroundColor: widget.backgroundColor,
+               color: widget.fontColor,
+               fontFamily: widget.fontFamily,
+               fontStyle: widget.fontStyle,
+               fontSize: widget.fontSize,
+               lineHeight: widget.lineHeight,
+               fontWeight: widget.fontWeight,
+               letterSpacing: widget.letterSpacing,
+               textAlign: widget.align,
+               justifyContent: widget.justify,
+               marginTop: widget.marginTop,
+               marginBottom: widget.marginBottom,
+               marginLeft: widget.marginLeft,
+               marginRight: widget.marginRight,
+               paddingTop: widget.paddingTop,
+               paddingBottom: widget.paddingBottom,
+               paddingRight: widget.paddingRight,
+               paddingLeft: widget.paddingLeft,
                display: showWidget ? '' : 'none',
-               '&:hover': { border: '1px solid #03a9f4' }
+               border: isActve ? '1px solid #03a9f4' : '0px',
+               '&:hover': { border: '1px solid #03a9f4' },
             }}
+            onMouseOver={() => setShowController(true)}
+            onMouseLeave={() => setShowController(false)}
+            onClick={handleBoxClick}
+            ref={ref}
          >
             <WidgetController
                visible={showController}
@@ -176,51 +181,50 @@ const FormGrid = (props: FormGridProps) => {
                onDelete={onDelete}
                onDrag={() => { setShowWidget(false); setIsDragging(true) }}
                onDragEnd={() => { setShowWidget(true); setIsDragging(false) }}
-               id={id}
-               parentId={parentId}
+               id={widget.id}
+               parentId={widget.parentId}
             />
-            {Array.from({ length: row }, (_, ii) => (
-               <Grid container spacing={2} key={ii}>
-                  {Array.from({ length: column }, (_, jj) => (
-                     <Grid item key={jj} xs={12 / column} >
-                        <WidgetDrogPad
-                           widgets={items}
-                           key={items[ii][jj].id}
-                           targetId={items[ii][jj].id}
-                           onDrop={moveItem}
-                           variant="swap"
-                           parent={id}
-                        >
-                           <GenerateWidget
-                              item={items[ii][jj]}
-                              onDelete={() => deleteItem(ii, jj)}
-                              onAdd={(id: number, itemType: string) => addItem(ii, jj, itemType)}
-                              onChange={(newItem: WIDGET_TYPE) => updateItem(ii, jj, newItem)}
-                              widgetNames={widgetNames}
-                              setWidgetNames={setWidgetNames}
-                              setActive={() => setActive(items[ii][jj])}
-                              setInactive={setInactive}
-                           />
-                        </WidgetDrogPad>
-                     </Grid>
-                  ))}
-               </Grid>
-            ))}
-
-            <Box sx={{ textAlign: 'center', position: 'absolute', top: '45%', right: -30, display: showController ? '' : 'none' }}>
-               <Tooltip title="add column" placement="top">
-                  <IconButton size='small' onClick={addColumn}>
-                     <AddCircleOutlineRoundedIcon />
+            <Box className="grid-section">
+               <Divider sx={{ display: isVisible ? 'none' : '' }} className="grid-section">
+                  <IconButton
+                     size="small"
+                     disableRipple
+                     className="grid-section"
+                  >
+                     <VisibilityOffIcon className="grid-section" />
                   </IconButton>
-               </Tooltip>
+               </Divider>
             </Box>
-
-            <Box sx={{ textAlign: 'center', position: 'absolute', right: 0, bottom: -30, left: 0, margin: 'auto', display: showController ? '' : 'none' }}>
-               <Tooltip title="add row" placement="top">
-                  <IconButton size='small' onClick={addRow}>
-                     <AddCircleOutlineRoundedIcon />
-                  </IconButton>
-               </Tooltip>
+            <Box sx={{ display: isVisible ? '' : 'none' }}>
+               {Array.from({ length: widget.row }, (_, ii) => (
+                  <Grid container spacing={2} key={ii}>
+                     {Array.from({ length: widget.column }, (_, jj) => (
+                        <Grid item key={jj} xs={12 / widget.column} className="grid-section" >
+                           <WidgetDrogPad
+                              widgets={widget.items}
+                              key={widget.items[ii][jj].id}
+                              targetId={widget.items[ii][jj].id}
+                              onDrop={moveItem}
+                              variant="swap"
+                              parent={widget.id}
+                           >
+                              <GenerateWidget
+                                 item={widget.items[ii][jj]}
+                                 onDelete={() => deleteItem(ii, jj)}
+                                 onAdd={(id: number, itemType: string) => addItem(ii, jj, itemType)}
+                                 onChange={(newItem: WIDGET_TYPE) => updateItem(ii, jj, newItem)}
+                                 widgetNames={widgetNames}
+                                 setWidgetNames={setWidgetNames}
+                                 setActive={() => setActive(widget.items[ii][jj])}
+                                 setInactive={setInactive}
+                                 handleWidgetCondition={handleWidgetCondition}
+                                 newSectionExclude="grid"
+                              />
+                           </WidgetDrogPad>
+                        </Grid>
+                     ))}
+                  </Grid>
+               ))}
             </Box>
          </Box>
       </Box>

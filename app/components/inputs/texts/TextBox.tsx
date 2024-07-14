@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Box } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import { TextareaAutosize } from '@mui/base/TextareaAutosize';
 import { styled } from '@mui/system';
 
@@ -25,6 +25,8 @@ const grey = {
    900: '#1C2025',
 };
 
+const errorColor = "#d3302f"
+
 const TextArea = styled(TextareaAutosize)(
    ({ theme }) => `
    display: block;
@@ -40,9 +42,8 @@ const TextArea = styled(TextareaAutosize)(
    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
    background: none;
    border: 1.5px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[300]};
+   border-radius: 5px;
 
-
-  
    &:hover {
      border-color: #000;
    }
@@ -60,18 +61,20 @@ const TextArea = styled(TextareaAutosize)(
 );
 
 interface TextBoxProps {
-   placeholder?: string,
-   value?: string,
-   setValue?: (value: string) => void,
-   onFocus?: (value: any) => void,
-   onBlur?: (value: any) => void,
-   minRows?: number,
-   maxRows?: number,
-   sx?: any,
-   id?: string,
-   className?: string,
+   placeholder?: string
+   value?: string
+   setValue?: (value: string) => void
+   require?: boolean
+   onFocus?: (value: any) => void
+   onBlur?: (value: any) => void
+   minRows?: number
+   maxRows?: number
+   sx?: any
+   id?: string
+   className?: string
 
 }
+
 
 const TextBox = (props: TextBoxProps) => {
 
@@ -79,6 +82,7 @@ const TextBox = (props: TextBoxProps) => {
       placeholder = '',
       value = '',
       setValue = (value: string) => void 0,
+      require = false,
       onFocus = () => void 0,
       onBlur = () => void 0,
       minRows = 0,
@@ -86,21 +90,55 @@ const TextBox = (props: TextBoxProps) => {
       sx,
       id = '',
       className = '',
+   } = props
+
+   const [error, setError] = useState<boolean>(false)
+   const [helperText, setHelperText] = useState<string>('')
+
+   const handleOnBlur = (event: any) => {
+      if (require && value === '') {
+         console.log("HERE")
+         setError(true)
+         setHelperText('Please fill this field')
+      }
+      else {
+         setError(false)
+         setHelperText('')
+         onBlur(event)
+      }
    }
-      = props
+
    return (
-      <TextArea
-         placeholder={placeholder}
-         value={value ? value : ''}
-         minRows={minRows}
-         maxRows={maxRows}
-         onChange={(event: any) => setValue(event.target.value)}
-         onFocus={onFocus}
-         onBlur={onBlur}
-         sx={sx}
-         id={id}
-         className={className}
-      />
+      <Box>
+         <TextArea
+            placeholder={placeholder}
+            value={value ? value : ''}
+            minRows={minRows}
+            maxRows={maxRows}
+            onChange={(event: any) => setValue(event.target.value)}
+            onFocus={onFocus}
+            onBlur={handleOnBlur}
+            sx={{ ...sx, borderColor: error ? errorColor : 'default' }}
+            id={id}
+            className={className}
+
+         />
+         <Typography
+            sx={{
+               fontSize: '0.75rem',
+               fontWeight: 400,
+               color: errorColor,
+               textAlign: 'left',
+               marginTop: '4px',
+               marginRight: '14px',
+               marginBottom: 0,
+               marginLeft: '14px'
+            }}
+         >
+            {helperText}
+         </Typography>
+      </Box>
+
    )
 }
 

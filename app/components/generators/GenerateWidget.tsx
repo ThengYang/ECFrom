@@ -34,7 +34,9 @@ interface GenerateWidgetProps {
    widgetNames?: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
    setActive?: (item: WIDGET_TYPE | null) => void
-   setInactive?: () => void
+   setInactive?: () => void,
+   handleWidgetCondition?: (parseEvent: string, data: any) => any,
+   newSectionExclude?: string,
 }
 
 const GenerateWidget = (props: GenerateWidgetProps) => {
@@ -48,34 +50,22 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
       setWidgetNames,
       setActive = () => void 0,
       setInactive = () => void 0,
+      handleWidgetCondition = () => void 0,
+      newSectionExclude = null,
    } = props
 
    if (IS_NEWSECTION(item)) {
       return (
          <Box>
-            <Section onAdd={onAdd} id={item.id} />
+            <Section onAdd={onAdd} id={item.id} exclude={newSectionExclude} />
          </Box>
       )
    }
    else if (IS_TEXT(item)) {
       return (
-
          <TitleText
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            value={item.value}
-            fontSize={item.fontSize}
-            fontColor={item.fontColor}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
+            widget={item}
+            handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
@@ -89,13 +79,8 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_FORMGRID(item)) {
       return (
          <FormGrid
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            column={item.column}
-            row={item.row}
-            items={item.items}
+            widget={item}
+            handleWidgetCondition={handleWidgetCondition}
             onAdd={onAdd}
             updateSubItems={updateSubItems}
             onDelete={onDelete}
@@ -109,24 +94,8 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTTEXT(item)) {
       return (
          <InputText
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            require={item.require}
-            responseType={item.responseType}
-            answer={item.answer}
+            widget={item}
+            handleWidgetCondition={handleWidgetCondition}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             onChange={onChange}
@@ -140,24 +109,8 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTSELECT(item)) {
       return (
          <InputSelect
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            answer={item.answer}
-            options={item.options}
-            require={item.require}
+            widget={item}
+            handleWidgetCondition={handleWidgetCondition}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             onChange={onChange}
@@ -171,26 +124,10 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTMULTISELECT(item)) {
       return (
          <InputMultiSelect
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            answer={item.answer}
-            options={item.options}
-            require={item.require}
+            widget={item}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
+            handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
@@ -202,26 +139,10 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTDATETIME(item)) {
       return (
          <InputDateTime
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            require={item.require}
-            responseType={item.responseType}
-            answer={item.answer}
+            widget={item}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
+            handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
@@ -233,28 +154,10 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTCHECKLIST(item)) {
       return (
          <InputCheckList
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            answer={item.answer}
-            options={item.options}
-            require={item.require}
-            responseType={item.responseType}
-            groupColumn={item.groupColumn}
+            widget={item}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
+            handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
@@ -266,32 +169,14 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
    else if (IS_INPUTTABLE(item)) {
       return (
          <InputTable
-            id={item.id}
-            parentId={item.parentId}
-            type={item.type}
-            name={item.name}
-            fontColor={item.fontColor}
-            fontSize={item.fontSize}
-            fontFamily={item.fontFamily}
-            lineHeight={item.lineHeight}
-            align={item.align}
-            justify={item.justify}
-            marginTop={item.marginTop}
-            marginRight={item.marginRight}
-            marginLeft={item.marginLeft}
-            marginBottom={item.marginBottom}
-            question={item.question}
-            answer={item.answer}
-            label={item.label}
-            column={item.column}
-            row={item.row}
-            require={item.require}
+            widget={item}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
+            handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={(widget?: WIDGET_TYPE) => widget ? setActive(widget) : setActive(null)}
             setInactive={setInactive}
          />
       )

@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import dayjs from 'dayjs';
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
 import { TimePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -28,6 +30,7 @@ const Time = (props: TimeProps) => {
    }
 
    const handleSetValue = (newValue: dayjs.Dayjs | null) => {
+
       if (newValue) {
          setValue(newValue.format('HH:mm'))
       }
@@ -36,7 +39,7 @@ const Time = (props: TimeProps) => {
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
          <TimePicker
-            value={value ? dayjs(value) : null}
+            value={value ? dayjs(value, "HH:mm") : null}
             open={open}
             onClose={() => setOpen(false)}
             onChange={handleSetValue}

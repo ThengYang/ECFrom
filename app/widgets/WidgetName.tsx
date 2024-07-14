@@ -3,7 +3,8 @@ import { Box, TextField, Typography } from "@mui/material";
 
 interface WidgetNameProps {
    value: string
-   id: string
+   id: string,
+   type: string,
    setValue: (value: string) => void
    visible: boolean,
    widgetNames: { [key: string]: any }
@@ -15,6 +16,7 @@ const WidgetName = (props: WidgetNameProps) => {
    const {
       value = '',
       id,
+      type,
       setValue = () => void 0,
       visible = true,
       widgetNames,
@@ -22,47 +24,65 @@ const WidgetName = (props: WidgetNameProps) => {
       onFocus = () => void 0,
    } = props
 
-
-   const [isExisted, setIsExisted] = useState<boolean>(false)
+   const [error, setError] = useState<boolean>(false)
+   const [errorText, setErrorText] = useState<string>('')
 
    const changeName = (event: any) => {
       setValue(event.target.value)
       if (widgetNames[event.target.value] && widgetNames[event.target.value] !== id) {
-         setIsExisted(true)
+         setError(true)
+         setErrorText("this name is assigned to another widget")
       }
-
+      else if (!event.target.value) {
+         setError(true)
+         setErrorText("widget name cannot be empty")
+      }
+      else if (event.target.value.includes("$")) {
+         setError(true)
+         setErrorText("widget name cannot contains $")
+      }
+      else if (event.target.value.includes("->")) {
+         setError(true)
+         setErrorText("widget name cannot contains ->")
+      }
+      else {
+         setError(false)
+         setErrorText('')
+      }
    }
+
    const handleSetValue = () => {
-      if (isExisted) {
+      if (error) {
          for (const key in widgetNames) {
-            if (widgetNames[key] === id) {
+            if (widgetNames[key].id === id) {
                setValue(key as string)
             }
          }
-         setIsExisted(false)
+         setError(false)
+         setErrorText('')
       }
       else {
          let newWidgetNames = widgetNames
          for (const key in newWidgetNames) {
-            if (newWidgetNames[key] === id) {
+            if (newWidgetNames[key].id === id) {
                delete newWidgetNames[key];
             }
          }
-         newWidgetNames[value] = id
+         newWidgetNames[value] = { id: id, type: type }
          setWidgetNames(newWidgetNames)
 
       }
-      setIsExisted(false)
    }
 
    return (
-      <Box>
+      <Box sx={{ textAlign: 'left' }}>
          <TextField
             variant="outlined"
             placeholder="Widget Name"
             value={value}
             size='small'
-            error={isExisted}
+            error={error}
+
             inputProps={{
                style: {
                   height: '8px',
@@ -83,12 +103,12 @@ const WidgetName = (props: WidgetNameProps) => {
          <Typography
             color='error'
             sx={{
-               display: isExisted ? 'inline' : 'none',
+               display: (error) ? 'inline' : 'none',
                marginLeft: '5px',
                fontSize: 12
             }}
          >
-            this name is assigned to another widget
+            {errorText}
          </Typography>
       </Box>
    )
