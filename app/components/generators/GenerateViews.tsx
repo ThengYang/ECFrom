@@ -22,13 +22,15 @@ import {
 } from "@/app/views/views";
 
 interface GenerateViewsProps {
-   widget: WIDGET_TYPE,
+   widget: WIDGET_TYPE | null | undefined,
+   getWidget: (id: string) => WIDGET_TYPE | null | undefined
    updateWidget?: (widget: WIDGET_TYPE) => void
    handleWidgetCondition: (parseEvent: string, data: any) => any
 }
 const GenerateViews = (props: GenerateViewsProps) => {
    const {
       widget,
+      getWidget,
       updateWidget = () => void 0,
       handleWidgetCondition,
    } = props
@@ -70,7 +72,11 @@ const GenerateViews = (props: GenerateViewsProps) => {
    }
    else if (IS_FORMGRID(widget)) {
       return (
-         <LayoutGrid widget={widget} updateWidget={updateWidget} handleWidgetCondition={handleWidgetCondition} />
+         <LayoutGrid
+            widget={widget}
+            getWidget={getWidget}
+            updateWidget={updateWidget}
+            handleWidgetCondition={handleWidgetCondition} />
       )
    }
 }

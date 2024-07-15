@@ -137,7 +137,7 @@ export interface FORMGRID {
    name: string,
    row: number,
    column: number,
-   items: Array<Array<WIDGET_TYPE>>
+   items: Array<Array<string>>
    fontSize: number,
    fontColor: string,
    fontFamily: string,
@@ -452,7 +452,7 @@ export interface INPUTTABLE {
    >,
 
    row: Array<{ id: number, [key: string]: any }>,
-   footer: WIDGET_TYPE,
+   footer: string,
    align: 'left' | 'center' | 'right' | 'justify',
    justify: 'left' | 'center' | 'right',
    marginTop: number,

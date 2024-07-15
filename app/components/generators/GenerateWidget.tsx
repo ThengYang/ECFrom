@@ -25,7 +25,7 @@ import InputCheckList from "@/app/widgets/Inputs/InputCheckList";
 import InputTable from "@/app/widgets/Inputs/InputTable";
 
 interface GenerateWidgetProps {
-   item: WIDGET_TYPE
+   widget: WIDGET_TYPE | null | undefined
    onChange?: Function
    onMove?: Function
    onAdd?: Function
@@ -33,7 +33,8 @@ interface GenerateWidgetProps {
    updateSubItems?: Function,
    widgetNames?: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: (item: WIDGET_TYPE | null) => void
+   getWidget?: (id: string) => WIDGET_TYPE | null | undefined
+   setActive?: (widgetID: string | null | undefined) => void
    setInactive?: () => void,
    handleWidgetCondition?: (parseEvent: string, data: any) => any,
    newSectionExclude?: string,
@@ -41,45 +42,47 @@ interface GenerateWidgetProps {
 
 const GenerateWidget = (props: GenerateWidgetProps) => {
    const {
-      item = { type: 'new-section' },
+      widget = { type: 'new-section' },
       onChange = () => void 0,
       onAdd = () => void 0,
       onDelete = () => void 0,
       updateSubItems = () => void 0,
       widgetNames = {},
       setWidgetNames,
+      getWidget = () => void 0,
       setActive = () => void 0,
       setInactive = () => void 0,
       handleWidgetCondition = () => void 0,
       newSectionExclude = null,
    } = props
 
-   if (IS_NEWSECTION(item)) {
+   if (IS_NEWSECTION(widget)) {
       return (
          <Box>
-            <Section onAdd={onAdd} id={item.id} exclude={newSectionExclude} />
+            <Section onAdd={onAdd} id={widget.id} exclude={newSectionExclude} />
          </Box>
       )
    }
-   else if (IS_TEXT(item)) {
+   else if (IS_TEXT(widget)) {
       return (
          <TitleText
-            widget={item}
+            widget={widget}
             handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_FORMGRID(item)) {
+   else if (IS_FORMGRID(widget)) {
       return (
          <FormGrid
-            widget={item}
+            widget={widget}
+            getWidget={getWidget}
             handleWidgetCondition={handleWidgetCondition}
             onAdd={onAdd}
             updateSubItems={updateSubItems}
@@ -91,92 +94,94 @@ const GenerateWidget = (props: GenerateWidgetProps) => {
          />
       )
    }
-   else if (IS_INPUTTEXT(item)) {
+   else if (IS_INPUTTEXT(widget)) {
       return (
          <InputText
-            widget={item}
+            widget={widget}
             handleWidgetCondition={handleWidgetCondition}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_INPUTSELECT(item)) {
+   else if (IS_INPUTSELECT(widget)) {
       return (
          <InputSelect
-            widget={item}
+            widget={widget}
             handleWidgetCondition={handleWidgetCondition}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_INPUTMULTISELECT(item)) {
+   else if (IS_INPUTMULTISELECT(widget)) {
       return (
          <InputMultiSelect
-            widget={item}
+            widget={widget}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_INPUTDATETIME(item)) {
+   else if (IS_INPUTDATETIME(widget)) {
       return (
          <InputDateTime
-            widget={item}
+            widget={widget}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_INPUTCHECKLIST(item)) {
+   else if (IS_INPUTCHECKLIST(widget)) {
       return (
          <InputCheckList
-            widget={item}
+            widget={widget}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={() => setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )
    }
-   else if (IS_INPUTTABLE(item)) {
+   else if (IS_INPUTTABLE(widget)) {
       return (
          <InputTable
-            widget={item}
+            widget={widget}
+            getWidget={getWidget}
             widgetNames={widgetNames}
             setWidgetNames={setWidgetNames}
             handleWidgetCondition={handleWidgetCondition}
             onChange={onChange}
+            updateSubItems={updateSubItems}
             onAdd={onAdd}
             onDelete={onDelete}
-            setActive={(widget?: WIDGET_TYPE) => widget ? setActive(widget) : setActive(null)}
+            setActive={setActive}
             setInactive={setInactive}
          />
       )

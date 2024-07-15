@@ -1,16 +1,7 @@
 "use client"
 
 import { useState } from "react";
-
-import { Box, ThemeProvider, IconButton, Divider } from "@mui/material";
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-
-import WidgetController from "../WidgetController";
-import WidgetDragPreview from "../WidgetDragPreview";
-import BaseTheme from "@/app/themes/BaseTheme";
-import { TextBox } from "@/app/components/inputs/texts";
 import { TEXT } from "@/app/constants/WigetType";
-import WidgetName from "../WidgetName";
 import useOutsideClick from "../WidgetClickOutSideHook";
 import WidgetBase from "../WidgetBase";
 
@@ -21,7 +12,7 @@ interface FormTextProps {
    onDelete?: Function
    widgetNames: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: () => void
+   setActive?: (id: string | null | undefined) => void
    setInactive?: () => void
    handleWidgetCondition: (parseEvent: string, data: any) => any,
 }
@@ -40,9 +31,6 @@ const TitleText = (props: FormTextProps) => {
       setInactive = () => void 0,
    } = props
 
-   const [showController, setShowController] = useState<boolean>(false)
-   const [showWidget, setShowWidget] = useState<boolean>(true)
-   const [isDragging, setIsDragging] = useState<boolean>(false)
    const [isActve, setIsActive] = useState<boolean>(false)
 
    const ref = useOutsideClick((event: any) => {
@@ -71,40 +59,6 @@ const TitleText = (props: FormTextProps) => {
       }
    });
 
-   const handleWidgetNameChange = (newName: string) => {
-      onChange(
-         {
-            ...widget,
-            name: newName
-         }
-      )
-   }
-
-   const handleWidgetValueChange = (value: string) => {
-      onChange(
-         {
-            ...widget,
-            value: value
-
-         }
-      )
-   }
-
-   const handleDragEnd = () => {
-      setIsDragging(false)
-      setShowWidget(true)
-   }
-
-   const handleBoxClick = (event: any) => {
-      if (event.target.classList.contains('grid-section') || event.target.classList.contains('form-section')) {
-         setActive();
-         setIsActive(true);
-      }
-   }
-   const isVisible = widget.visibility?.conditional ?
-      handleWidgetCondition('visibility', widget.visibility) :
-      widget.visibility?.action === 'hidden' ? false : true
-
    return (
       <WidgetBase widget={widget}
          handleWidgetCondition={handleWidgetCondition}
@@ -113,7 +67,7 @@ const TitleText = (props: FormTextProps) => {
          onChange={onChange}
          onAdd={onAdd}
          onDelete={onDelete}
-         setActive={setActive}
+         setActive={(id: string | null | undefined) => { console.log(id); setActive(id) }}
          setInactive={setInactive}
       />
    )

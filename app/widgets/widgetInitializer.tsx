@@ -119,34 +119,7 @@ export default function initialize(
             backgroundColor: 'inherit',
             row: 2,
             column: 2,
-            items: [
-               [{
-                  id: uuidv4(),
-                  parentId: widgetId,
-                  type: 'new-section',
-                  name: ''
-               },
-               {
-                  id: uuidv4(),
-                  parentId: widgetId,
-                  type: 'new-section',
-                  name: ''
-               }
-               ],
-
-               [{
-                  id: uuidv4(),
-                  parentId: widgetId,
-                  type: 'new-section',
-                  name: ''
-               },
-               {
-                  id: uuidv4(),
-                  parentId: widgetId,
-                  type: 'new-section',
-                  name: ''
-               }],
-            ]
+            items: [['', ''], ['', '']]
          }
          break;
 
@@ -444,13 +417,7 @@ export default function initialize(
                { id: 2, column_2: '', column_3: '', column_4: '' },
                { id: 3, column_2: '', column_3: '', column_4: '' },
             ],
-            footer: {
-               id: uuidv4(),
-               parentId: widgetId,
-               type: 'new-section',
-               name: ''
-            },
-
+            footer: '',
             require: false,
          }
          break;

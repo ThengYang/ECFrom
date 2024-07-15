@@ -18,13 +18,13 @@ const SingleSelectSettingOptions = (props: OptionProps) => {
    )
 
    const setWidegetOptions = (index: number | null, option: { key: number, value: string } | null) => {
-      let newWidget = activeWidget
+      let newWidget = { ...activeWidget }
       if (index === null) {
          const id = (Date.now() + Math.floor(Math.random() * 1000000)) % 10000;
-         activeWidget.options.push({ key: id, value: 'Option' })
+         newWidget.options.push({ key: id, value: 'Option' })
       }
       else if (option) {
-         activeWidget.options[index] = option;
+         newWidget.options[index] = option;
       }
       updateWidget(newWidget)
    }

@@ -111,161 +111,84 @@ const AccountsPage = (props: PageProps) => {
   const [open, setOpen] = useState(true);
   const [activeWidget, setActiveWidget] = useState<WIDGET_TYPE | null>(null)
 
-  const [widgets, setWidgets] = useState<Array<WIDGET_TYPE>>([])
-
-  const [widgetNames, setwidgetNames] = useState<{ [key: string]: any }>({ 'length': 0 });
+  const [widgets, setWidgets] = useState<{ [id: string]: WIDGET_TYPE }>({})
+  const [widgetOrder, setWidgetOrder] = useState<Array<string>>([])
+  const [widgetNames, setwidgetNames] = useState<{ [id: string]: any }>({ 'length': 0 });
 
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
 
-  const handleGetWidget = (id: string, gridItems?: Array<Array<WIDGET_TYPE>> | null): any => {
-    let foundWidget = null
-    if (gridItems) {
-      for (const itemCol of gridItems) {
-        foundWidget = itemCol.find(widget => IS_FORMGRID(widget) ? handleGetWidget(id, gridItems = widget.items) : widget.id === id)
-        if (foundWidget) {
-          return foundWidget
-        }
-      }
-    }
-
-    else {
-      for (const widget of widgets) {
-        if (widget.id === id) {
-          return widget
-        }
-        else if (IS_FORMGRID(widget)) {
-          foundWidget = handleGetWidget(id, gridItems = widget.items)
-          if (foundWidget) return foundWidget
-        }
-        else if (IS_INPUTTABLE(widget)) {
-          if (widget.footer.id === id) {
-            return widget.footer
-          }
-          else if (IS_FORMGRID(widget.footer)) {
-            foundWidget = handleGetWidget(id, gridItems = widget.footer.items)
-            if (foundWidget) return foundWidget
-          }
-        }
-      }
-    }
-
-    return foundWidget
+  const handleGetWidget = (id: string): WIDGET_TYPE | undefined | null => {
+    return widgets[id]
   }
 
   const handleAddWidget = (id: string | null, itemType: string) => {
-    const tempWidgets = [...widgets]
+    const tempWidgets = { ...widgets }
+    const tempWidgetOrder = [...widgetOrder]
 
     const { newWidget, newWidgetNames } = initialize(pageId, itemType, widgetNames)
+    const idx = tempWidgetOrder.findIndex(widgetID => widgetID === id)
 
-    if (id !== null && newWidget.id !== '-1') {
-
-      const index = widgets.findIndex(widget => widget.id === id)
-      if (index !== -1) {
-        const tempWidgets = [...widgets]
-        tempWidgets[index] = newWidget;
-        setWidgets(tempWidgets);
-      }
-    }
-
-    else if (newWidget.id !== '-1') {
-      tempWidgets.push(newWidget)
-      setWidgets(tempWidgets)
-    }
-    setWidgetNames(newWidgetNames);
-  }
-
-  const handleUpdateWidget = (item: WIDGET_TYPE) => {
-    if (item.parentId === pageId || !item.parentId) {
-      setWidgets((prevWidgets) =>
-        prevWidgets.map(widget =>
-          widget.id === item.id ? item : widget
-        )
-      )
+    if (idx !== -1) {
+      delete tempWidgets[tempWidgetOrder[idx]]
+      tempWidgetOrder[idx] = newWidget.id
     }
     else {
-      const parentWidget = handleGetWidget(item.parentId)
-
-      if (parentWidget && parentWidget.type === 'grid') {
-        for (let row of parentWidget.items) {
-          const colIndex = row.findIndex((widget: WIDGET_TYPE) => widget.id == item.id)
-          if (colIndex !== -1) {
-            row[colIndex] = item;
-            break;
-          }
-        }
-
-        setWidgets((prevWidgets) =>
-          prevWidgets.map(widget =>
-            widget.id === parentWidget.id ? parentWidget : IS_INPUTTABLE(widget) ?
-              widget.footer.id === parentWidget.id ? { ...widget, footer: parentWidget } : widget : widget
-          )
-        )
-      }
-      else if (parentWidget && parentWidget.type === 'table') {
-
-        parentWidget.footer = item
-        setWidgets((prevWidgets) =>
-          prevWidgets.map(widget =>
-            widget.id === parentWidget.id ? parentWidget : widget
-          )
-        )
-      }
+      tempWidgetOrder.push(newWidget.id)
     }
+    tempWidgets[newWidget.id] = newWidget
 
+    setWidgets(tempWidgets)
+    setWidgetOrder(tempWidgetOrder)
+    setWidgetNames(newWidgetNames)
+  }
 
-    if (activeWidget?.id === item.id) {
-      setActiveWidget(item)
+  const handleUpdateWidget = (updatedWidget: WIDGET_TYPE) => {
+    const tempWidgets = { ...widgets }
+    tempWidgets[updatedWidget.id] = updatedWidget
+    if (activeWidget?.id === updatedWidget.id) {
+      setActiveWidget(updatedWidget)
     }
+    setWidgets(tempWidgets)
   }
 
   const handleDeleteWidget = (id: string) => {
-    const index = widgets.findIndex(widget => widget.id === id)
-    if (index !== -1) {
-      const tempWidgets = [...widgets]
-      tempWidgets.splice(index, 1);
-
-      let tempWidgetNames = widgetNames
-      delete tempWidgetNames[widgets[index].name];
-      tempWidgetNames.length -= 1;
-
-      setWidgets(tempWidgets)
-      setWidgetNames(tempWidgetNames)
-    }
+    const tempWidgets = { ...widgets }
+    delete tempWidgets[id]
+    setWidgets(tempWidgets)
+    setWidgetOrder(widgetOrder.filter(widgetID => widgetID !== id))
   }
 
   const handleAddWidgetAbove = (id: string) => {
-    const index = widgets.findIndex(widget => widget.id === id)
+    const tempWidgets = { ...widgets }
+    const tempWidgetOrder = [...widgetOrder]
+    const { newWidget, newWidgetNames } = initialize(tempWidgets[id].parentId, tempWidgets[id].type, widgetNames)
+    const index = tempWidgetOrder.findIndex(widgetID => widgetID === id)
+
     if (index !== -1) {
-      const tempWidgets = [...widgets]
-      tempWidgets.splice(
-        index,
-        0,
-        {
-          id: uuidv4(),
-          parentId: pageId as string,
-          type: 'new-section',
-          name: ''
-        });
+      tempWidgetOrder.splice(index, 0, newWidget.id)
+      setWidgetOrder(tempWidgetOrder)
       setWidgets(tempWidgets)
+      setWidgetNames(newWidgetNames)
     }
   }
 
   const handleMoveWidget = (sourceId: string, targetId: string) => {
-
-    const sourceIndex = widgets.findIndex(widget => widget.id === sourceId)
-    const targetIndex = widgets.findIndex(widget => widget.id === targetId)
+    const sourceIndex = widgetOrder.findIndex(widgetID => widgetID === sourceId)
+    const targetIndex = widgetOrder.findIndex(widgetID => widgetID === targetId)
 
     if (sourceIndex !== -1 && targetIndex !== -1) {
-      const tempWidgets = [...widgets]
-      const sourceWidget = tempWidgets[sourceIndex]
-
-      tempWidgets.splice(sourceIndex, 1);
-      tempWidgets.splice(targetIndex, 0, sourceWidget);
-
-      setWidgets(tempWidgets)
+      const tempWidgetOrder = [...widgetOrder]
+      const sourceWidget = tempWidgetOrder[sourceIndex]
+      tempWidgetOrder.splice(sourceIndex, 1);
+      tempWidgetOrder.splice(targetIndex, 0, sourceWidget);
+      setWidgetOrder(tempWidgetOrder)
     }
+  }
+
+  const handleSetWidgetActive = (widgetID: string | null | undefined) => {
+    if (widgetID) setActiveWidget(widgets[widgetID])
   }
 
   const setWidgetNames = (names: { [key: string]: any }) => {
@@ -315,31 +238,38 @@ const AccountsPage = (props: PageProps) => {
               </IconButton>
               {open ?
                 <Box className="p-20 pt-1">
-                  {widgets.map(item =>
+                  {widgetOrder.map(widgetID =>
                     <WidgetDrogPad
                       onDrop={handleMoveWidget}
-                      widgets={widgets}
-                      key={item.id}
-                      targetId={item.id}
+                      widgets={widgetOrder}
+                      key={widgetID}
+                      targetId={widgetID}
                       parent={pageId}
                     >
                       <GenerateWidget
-                        item={item}
+                        widget={widgets[widgetID]}
                         onChange={handleUpdateWidget}
                         onDelete={handleDeleteWidget}
-                        onAdd={item.type === 'new-section' ? handleAddWidget : handleAddWidgetAbove}
+                        onAdd={widgets[widgetID].type === 'new-section' ? handleAddWidget : handleAddWidgetAbove}
                         onMove={handleMoveWidget}
                         updateSubItems={handleUpdateWidget}
                         widgetNames={widgetNames}
+                        getWidget={handleGetWidget}
                         setWidgetNames={setWidgetNames}
-                        setActive={(childItem: WIDGET_TYPE | null) => childItem ? setActiveWidget(childItem) : setActiveWidget(item)}
+                        setActive={handleSetWidgetActive}
                         setInactive={() => setActiveWidget(null)}
                         handleWidgetCondition={handleWidgetCondition}
                       />
                     </WidgetDrogPad>
                   )}
                   <Section onAdd={handleAddWidget} />
-                </Box> : <Preview widgets={widgets} updateWidget={handleUpdateWidget} handleWidgetCondition={handleWidgetCondition} />
+                </Box> :
+                <Preview
+                  widgetOrder={widgetOrder}
+                  getWidget={handleGetWidget}
+                  updateWidget={handleUpdateWidget}
+                  handleWidgetCondition={handleWidgetCondition}
+                />
               }
             </Box>
           </Box>

@@ -5,6 +5,7 @@ import GenerateViews from "@/app/components/generators/GenerateViews"
 
 interface LayoutGridProps {
    widget: FORMGRID
+   getWidget: (id: string) => WIDGET_TYPE | null | undefined
    updateWidget?: (widget: WIDGET_TYPE) => void
    handleWidgetCondition: (parseEvent: string, data: any) => any
 }
@@ -13,18 +14,14 @@ const LayoutGrid = (props: LayoutGridProps) => {
 
    const {
       widget,
+      getWidget,
       updateWidget = () => void 0,
       handleWidgetCondition
    } = props
 
    const handleUpdateWidget = (newWidget: WIDGET_TYPE, row: number, column: number) => {
-      let tempWidgets = widget.items
-      tempWidgets[row][column] = newWidget
 
-      updateWidget({
-         ...widget,
-         items: tempWidgets
-      })
+      updateWidget(newWidget)
    }
 
    const isVisible = widget.visibility?.conditional ?
@@ -60,7 +57,8 @@ const LayoutGrid = (props: LayoutGridProps) => {
                {Array.from({ length: widget.column }, (_, jj) => (
                   <Grid item key={jj} xs={12 / widget.column} >
                      <GenerateViews
-                        widget={widget.items[ii][jj]}
+                        widget={getWidget(widget.items[ii][jj])}
+                        getWidget={getWidget}
                         updateWidget={(newItem: WIDGET_TYPE) => handleUpdateWidget(newItem, ii, jj)}
                         handleWidgetCondition={handleWidgetCondition}
                      />

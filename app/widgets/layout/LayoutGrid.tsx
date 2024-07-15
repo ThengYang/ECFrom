@@ -15,19 +15,21 @@ import initialize from "../widgetInitializer";
 
 interface FormGridProps {
    widget: FORMGRID
+   getWidget: (id: string) => WIDGET_TYPE | null | undefined
    onChange?: Function
    onAdd?: Function
    onDelete?: Function
    updateSubItems?: Function
    widgetNames: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: (item: WIDGET_TYPE | null) => void
+   setActive?: (widgetID: string | null | undefined) => void
    setInactive?: () => void
    handleWidgetCondition?: (parseEvent: string, data: any) => any
 }
 const FormGrid = (props: FormGridProps) => {
    const {
       widget,
+      getWidget,
       onAdd = () => void 0,
       onDelete = () => void 0,
       updateSubItems = () => void 0,
@@ -68,38 +70,31 @@ const FormGrid = (props: FormGridProps) => {
       }
    });
 
-   const updateItem = (rowIndex: number, colIndex: number, newItem: WIDGET_TYPE) => {
-      let updatedItems = [...widget.items]
-      updatedItems[rowIndex][colIndex] = newItem
-
-      updateSubItems({ ...widget, items: updatedItems })
-      setActive(newItem)
-   }
-
    const addItem = (rowIndex: number, colIndex: number, itemType: string) => {
       const { newWidget, newWidgetNames } = initialize(widget.id, itemType, widgetNames);
       if (newWidget.id !== '-1') {
-         let updateItems = [...widget.items]
-         updateItems[rowIndex][colIndex] = newWidget
-         updateSubItems(updateItems)
+         const tempItems = [...widget.items]
+         tempItems[rowIndex][colIndex] = newWidget.id
+
+         updateSubItems({ ...widget, items: tempItems })
+         updateSubItems(newWidget)
+         setWidgetNames(newWidgetNames)
       }
-      setWidgetNames(newWidgetNames)
    }
 
    const deleteItem = (rowIndex: number, colIndex: number) => {
-      let updatedItems = [...widget.items]
+
       let tempWidgetNames = widgetNames
-      delete tempWidgetNames[updatedItems[rowIndex][colIndex].name];
+      delete tempWidgetNames[widget.items[rowIndex][colIndex]];
+
       tempWidgetNames.length -= 1;
 
-      updatedItems[rowIndex][colIndex] = {
-         id: updatedItems[rowIndex][colIndex].id as string,
-         parentId: widget.items[rowIndex][colIndex].parentId as string,
+      updateSubItems({
+         id: widget.items[rowIndex][colIndex],
+         parentId: widget.id,
          type: 'new-section',
          name: ''
-      }
-
-      updateSubItems(updatedItems)
+      })
       setWidgetNames(tempWidgetNames)
    }
 
@@ -110,8 +105,8 @@ const FormGrid = (props: FormGridProps) => {
       let updatedItems = [...widget.items]
 
       for (let ii = 0; ii < widget.items.length; ii++) {
-         const sourceCol = widget.items[ii].findIndex(item => item.id === sourceId)
-         const targetCol = widget.items[ii].findIndex(item => item.id === targetId)
+         const sourceCol = widget.items[ii].findIndex(itemID => itemID === sourceId)
+         const targetCol = widget.items[ii].findIndex(itemID => itemID === targetId)
 
          if (sourceCol > -1) {
             sourceIndices = [ii, sourceCol]
@@ -124,16 +119,15 @@ const FormGrid = (props: FormGridProps) => {
             const sourceWidget = updatedItems[sourceIndices[0]][sourceIndices[1]]
             updatedItems[sourceIndices[0]][sourceIndices[1]] = updatedItems[targetIndices[0]][targetIndices[1]]
             updatedItems[targetIndices[0]][targetIndices[1]] = sourceWidget
-            updateSubItems(updatedItems)
+
+            updateSubItems({ ...widget, items: updatedItems })
             break;
          }
       }
    }
 
    const handleBoxClick = (event: any) => {
-
       if (event.target.classList.contains('grid-section') || event.target.classList.contains('form-section')) {
-         console.log("Grid clicked", event.target)
          setActive(null);
          setIsActive(true);
       }
@@ -202,17 +196,17 @@ const FormGrid = (props: FormGridProps) => {
                         <Grid item key={jj} xs={12 / widget.column} className="grid-section" >
                            <WidgetDrogPad
                               widgets={widget.items}
-                              key={widget.items[ii][jj].id}
-                              targetId={widget.items[ii][jj].id}
+                              key={widget.items[ii][jj]}
+                              targetId={widget.items[ii][jj]}
                               onDrop={moveItem}
                               variant="swap"
                               parent={widget.id}
                            >
                               <GenerateWidget
-                                 item={widget.items[ii][jj]}
+                                 widget={getWidget(widget.items[ii][jj])}
                                  onDelete={() => deleteItem(ii, jj)}
                                  onAdd={(id: number, itemType: string) => addItem(ii, jj, itemType)}
-                                 onChange={(newItem: WIDGET_TYPE) => updateItem(ii, jj, newItem)}
+                                 onChange={(updatedWidget: WIDGET_TYPE) => updateSubItems(updatedWidget)}
                                  widgetNames={widgetNames}
                                  setWidgetNames={setWidgetNames}
                                  setActive={() => setActive(widget.items[ii][jj])}

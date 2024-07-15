@@ -26,8 +26,8 @@ const WidgetDrogPad = ({ children, onDrop, widgets, targetId, parent, variant = 
 
          hover: (item, monitor) => {
 
-            const sourceIndex = widgets.findIndex(widget => widget.id === item.id)
-            const targetIndex = widgets.findIndex(widget => widget.id === targetId)
+            const sourceIndex = widgets.findIndex(widgetID => widgetID === item.id)
+            const targetIndex = widgets.findIndex(widgetID => widgetID === targetId)
 
             if (parent === item.parentId) {
 

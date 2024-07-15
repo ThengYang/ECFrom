@@ -14,7 +14,7 @@ interface InputDateTimeProps {
    onChange?: Function
    onAdd?: Function
    onDelete?: Function
-   setActive?: () => void
+   setActive?: (widgetID: string | null | undefined) => void
    setInactive?: () => void
 }
 

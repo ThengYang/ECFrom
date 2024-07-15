@@ -19,7 +19,7 @@ interface WidgetBaseProps {
    onDelete?: Function
    widgetNames: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: () => void
+   setActive?: (widgetID: string | null | undefined) => void
    setInactive?: () => void
    handleWidgetCondition: (parseEvent: string, data: any) => any,
 }
@@ -95,13 +95,6 @@ const WidgetBase = (props: WidgetBaseProps) => {
       )
    }
 
-   const handleBoxClick = (event: any) => {
-      if (event.target.classList.contains('grid-section') || event.target.classList.contains('form-section')) {
-         // setActive();
-         //setIsActive(true);
-      }
-   }
-
    const isVisible = widget.visibility?.conditional ?
       handleWidgetCondition('visibility', widget.visibility) :
       widget.visibility?.action === 'hidden' ? false : true
@@ -131,7 +124,6 @@ const WidgetBase = (props: WidgetBaseProps) => {
             }}
             onMouseOver={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            onClick={handleBoxClick}
          >
             <WidgetController
                visible={isHover || isActve}
@@ -162,7 +154,7 @@ const WidgetBase = (props: WidgetBaseProps) => {
                   setValue={handleWidgetNameChanged}
                   widgetNames={widgetNames}
                   setWidgetNames={setWidgetNames}
-                  onFocus={() => { setActive(); setIsActive(true) }}
+                  onFocus={() => { setActive(widget.id); setIsActive(true) }}
                />
                {IS_INPUTTEXT(widget) && widget.variant === 'inline' ?
                   <Stack spacing={{ xs: 1 }} direction="row">
@@ -170,7 +162,7 @@ const WidgetBase = (props: WidgetBaseProps) => {
                         placeholder={'Content'}
                         value={widget.question}
                         setValue={handleWidgetQuestionChange}
-                        onFocus={() => { setActive(); setIsActive(true) }}
+                        onFocus={() => { setActive(widget.id); setIsActive(true) }}
                         sx={{
                            fontSize: widget.fontSize,
                            fontFamily: widget.fontFamily,
@@ -193,7 +185,7 @@ const WidgetBase = (props: WidgetBaseProps) => {
                         value={widget.question}
                         minRows={1}
                         setValue={handleWidgetQuestionChange}
-                        onFocus={() => { setActive(); setIsActive(true) }}
+                        onFocus={() => { setActive(widget.id); setIsActive(true) }}
                         sx={{
                            fontSize: widget.fontSize,
                            fontFamily: widget.fontFamily,

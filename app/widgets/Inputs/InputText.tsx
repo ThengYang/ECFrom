@@ -9,7 +9,7 @@ interface InputTextProps {
    onDelete?: Function
    widgetNames: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
-   setActive?: () => void
+   setActive?: (id: string | null | undefined) => void
    setInactive?: () => void
    handleWidgetCondition: (parseEvent: string, data: any) => any,
 }

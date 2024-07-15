@@ -4,28 +4,32 @@ import WidgetBase from "../WidgetBase";
 import Table from "@/app/components/inputs/table/Table";
 import GenerateWidget from "@/app/components/generators/GenerateWidget";
 import initialize from "../widgetInitializer";
-import { Box } from "@mui/material";
+
 
 
 interface InputTableProps {
    widget: INPUTTABLE
+   getWidget: (id: string) => WIDGET_TYPE | null | undefined
    widgetNames: { [key: string]: any }
    setWidgetNames: (item: { [key: string]: any }) => void
    handleWidgetCondition: (parseEvent: string, data: any) => any
    onChange?: Function
+   updateSubItems?: Function
    onAdd?: Function
    onDelete?: Function
-   setActive?: (widget?: WIDGET_TYPE) => void
+   setActive?: (widgetID: string | null | undefined) => void
    setInactive?: () => void
 }
 
 const InputTable = (props: InputTableProps) => {
    const {
       widget,
+      getWidget,
       widgetNames,
       setWidgetNames,
       handleWidgetCondition,
       onChange = (widget: WIDGET_TYPE) => void 0,
+      updateSubItems = () => void 0,
       onAdd = () => void 0,
       onDelete = () => void 0,
       setActive = () => void 0,
@@ -68,38 +72,40 @@ const InputTable = (props: InputTableProps) => {
    }
 
    const addFooter = (widgetType: string) => {
+
       const { newWidget, newWidgetNames } = initialize(widget.id, widgetType, widgetNames);
-      console.log(newWidget)
-      onChange({
-         ...widget,
-         footer: newWidget,
-      })
-      setWidgetNames(newWidgetNames)
+      console.log("New Footer", newWidget)
+      if (newWidget.id !== '-1') {
+         onChange({
+            ...widget,
+            footer: newWidget.id
+         })
+         onChange(newWidget)
+         setWidgetNames(newWidgetNames)
+      }
    }
 
    const updateFooter = (newWdiget: WIDGET_TYPE) => {
-
-      onChange({
-         ...widget,
-         footer: newWdiget
-      })
+      updateSubItems(newWdiget)
    }
 
    const deleteFooter = () => {
+      let tempWidgetNames = widgetNames
+      delete tempWidgetNames[widget.footer];
+
+      tempWidgetNames.length -= 1;
       onChange({
-         ...widget,
-         footer: {
-            id: widget.footer.id,
-            parentId: widget.footer.parentId,
-            type: 'new-section',
-            name: ''
-         }
+         id: widget.footer,
+         parentId: widget.id,
+         type: 'new-section',
+         name: ''
       })
+      setWidgetNames(tempWidgetNames)
    }
 
-   const setFooterActive = (childWidget: WIDGET_TYPE | null) => {
-      if (childWidget) {
-         setActive(childWidget)
+   const setFooterActive = (widgetID: string | null | undefined) => {
+      if (widgetID) {
+         setActive(widgetID)
       }
       else {
          setActive(widget.footer)
@@ -125,7 +131,7 @@ const InputTable = (props: InputTableProps) => {
             setValue={handleWidgetAnswerChange}
             makeFooter={() =>
                <GenerateWidget
-                  item={widget.footer}
+                  widget={getWidget(widget.footer)}
                   handleWidgetCondition={handleWidgetCondition}
                   setWidgetNames={setWidgetNames}
                   onDelete={deleteFooter}
